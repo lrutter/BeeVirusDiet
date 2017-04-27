@@ -132,3 +132,24 @@ NSNPvVSVP_DEG  <- topTags(NSNPvVSVP_DEG, n = nrow(y[[1]]))[[1]]
 NSNPvVSVP_DEG <- NSNPvVSVP_DEG[which(NSNPvVSVP_DEG$FDR<0.05),]
 ```
 
+The coefficients of the fit are `r colnames(fit)`
+```{r}
+colnames(fit)
+```
+
+allPairs = data.frame(Treatment1 = factor(), Treatment2 = factor(), NumberDEG = numeric())
+
+for (i in 1:(ncol(fit)-1)){
+  for (j in (i+1):ncol(fit)){
+    contrast=rep(0,ncol(fit))
+    contrast[i]=1
+    contrast[j]=-1
+    lrt <- glmLRT(fit, contrast=contrast)
+    lrt <- topTags(lrt, n = nrow(y[[1]]))[[1]]
+    lrt <- lrt[which(lrt$FDR<0.05),]
+    lrtLength <- nrow(lrt)
+    print(lrtLength)
+    allPairs = rbind(allPairs, data.frame(Treatment1 = factor(colnames(fit)[i]), Treatment2 = factor(colnames(fit)[j]), NumberDEG = lrtLength))
+  }
+}
+
