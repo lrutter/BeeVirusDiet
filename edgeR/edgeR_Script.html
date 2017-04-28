@@ -1,0 +1,209 @@
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc" />
+
+    <meta name="author" content="Lindsay Rutter" />
+  
+  
+  <title>Honey Bees - edgeR</title>
+
+    <script src="edgeR_Script_files/jquery-1.11.3/jquery.min.js"></script>
+  <link href="edgeR_Script_files/bootstrap-3.3.2/css/bootstrap.min.css" rel="stylesheet" />
+  <script src="edgeR_Script_files/bootstrap-3.3.2/js/bootstrap.min.js"></script>
+  <script src="edgeR_Script_files/bootstrap-3.3.2/shim/html5shiv.min.js"></script>
+  <script src="edgeR_Script_files/bootstrap-3.3.2/shim/respond.min.js"></script>
+  <link href="edgeR_Script_files/highlight-8.4/tomorrow.css" rel="stylesheet" />
+  <script src="edgeR_Script_files/highlight-8.4/highlight.pack.js"></script>
+  <link href="edgeR_Script_files/fontawesome-4.3.0/css/font-awesome.min.css" rel="stylesheet" />
+  <script src="edgeR_Script_files/stickykit-1.1.1/sticky-kit.min.js"></script>
+  <script src="edgeR_Script_files/jqueryeasing-1.3/jquery.easing.min.js"></script>
+  <link href="edgeR_Script_files/recliner-0.2.2/recliner.css" rel="stylesheet" />
+  <script src="edgeR_Script_files/recliner-0.2.2/recliner.min.js"></script>
+  <script src="edgeR_Script_files/recliner-0.2.2/onload.js"></script>
+  <link href="edgeR_Script_files/packagedocs-0.0.1/pd.css" rel="stylesheet" />
+  <script src="edgeR_Script_files/packagedocs-0.0.1/pd.js"></script>
+  <script src="edgeR_Script_files/packagedocs-0.0.1/pd-collapse-toc.js"></script>
+  
+  
+  
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+</head>
+
+<body>
+
+  
+  <header class="navbar navbar-white navbar-fixed-top" role="banner" id="header">
+    <div class="container">
+      <div class="navbar-header">
+        <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".navbar-collapse">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+                <a href="index.html" class="navbar-brand page-scroll">
+        Honey Bees - edgeR
+        </a>
+      </div>
+          </div>
+  </header>
+
+  <!-- Begin Body -->
+  <div class="container">
+    <div class="row">
+            <div class="col-md-12">
+      
+<div id="content-top"></div>
+<p><meta http-equiv="content-type" content="text/html;charset=utf-8" /></p>
+<pre class="r"><code>library(edgeR)
+library(ggplot2)
+library(GGally)
+library(EDASeq)
+library(utils)
+
+thisPath &lt;- &quot;/Users/lindz/BeeVirusDiet/edgeR&quot;
+
+beeCounts &lt;-read.delim(file=&quot;../AllLaneCount.txt&quot;,row.names=1,stringsAsFactors = FALSE)
+
+colnames(beeCounts) &lt;- c(&quot;NC.1&quot;, &quot;NC.2&quot;, &quot;NR.1&quot;, &quot;VR.1&quot;, &quot;NS.1&quot;, &quot;VP.1&quot;, &quot;NS.2&quot;, &quot;VR.2&quot;, &quot;NP.1&quot;, &quot;VP.2&quot;, &quot;VC.1&quot;, &quot;NP.2&quot;, &quot;VP.3&quot;, &quot;NP.3&quot;, &quot;VS.1&quot;, &quot;VS.2&quot;, &quot;VC.2&quot;, &quot;NC.3&quot;, &quot;VP.4&quot;, &quot;NC.4&quot;, &quot;NR.2&quot;, &quot;VC.3&quot;, &quot;VC.4&quot;, &quot;NP.4&quot;, &quot;VR.3&quot;, &quot;NC.5&quot;, &quot;VS.3&quot;, &quot;NP.5&quot;, &quot;VC.5&quot;, &quot;VS.4&quot;, &quot;NS.3&quot;, &quot;VS.5&quot;, &quot;VP.5&quot;, &quot;NR.3&quot;, &quot;NR.4&quot;, &quot;VC.6&quot;, &quot;NS.4&quot;, &quot;NC.6&quot;, &quot;NP.6&quot;, &quot;VR.4&quot;, &quot;NR.5&quot;, &quot;NR.6&quot;, &quot;NS.5&quot;, &quot;VP.6&quot;, &quot;NS.6&quot;, &quot;VR.5&quot;, &quot;VR.6&quot;, &quot;VS.6&quot;)
+
+beeCounts &lt;- beeCounts[ , order(names(beeCounts))]
+
+y &lt;- DGEList(counts=beeCounts)</code></pre>
+<p>edgeR vignette states that a gene is required to have a count of 5-10 in a library to be considered expressed in that library. Here minLib is equal to 3.04425910^{6}. A CPM of 3 corresponds to a count of ~9 in the minimum number of samples in a group (24). So, I keep only rows that have that. This reduces the number of genes from 15,314 to 8,581.</p>
+<pre class="r"><code>minLib &lt;- min(y$samples$lib.size)
+keep &lt;- rowSums(cpm(y)&gt;3) &gt;= 24
+# Number of genes 15,314--&gt; 8,581
+y &lt;- y[keep, , keep.lib.sizes=FALSE]</code></pre>
+<p>Next, I used edgeR normalization.</p>
+<pre class="r"><code>y &lt;- calcNormFactors(y)</code></pre>
+<p>I can create boxplot and RLE boxplot.</p>
+<pre class="r"><code>ggparcoord(data.frame(y[[1]]), columns=1:48, alphaLines=0, boxplot=TRUE, scale=&quot;globalminmax&quot;) + coord_flip()</code></pre>
+<p><img src="edgeR_Script_files/figure-html/unnamed-chunk-59-1.png" width="624" /></p>
+<pre class="r"><code>ggparcoord(data.frame(log(y[[1]]/colMeans(y[[1]]))), columns=1:48, alphaLines=0, boxplot=TRUE, scale=&quot;globalminmax&quot;) + coord_flip()</code></pre>
+<pre><code>Warning: Removed 56 rows containing non-finite values (stat_boxplot).</code></pre>
+<p><img src="edgeR_Script_files/figure-html/unnamed-chunk-59-2.png" width="624" /></p>
+<p>I can create MDS plots of interest.</p>
+<pre class="r"><code>allGroups &lt;- c(rep(&quot;NC&quot;,6), rep(&quot;NP&quot;,6), rep(&quot;NR&quot;,6), rep(&quot;NS&quot;,6), rep(&quot;VC&quot;,6), rep(&quot;VP&quot;,6), rep(&quot;VR&quot;,6), rep(&quot;VS&quot;,6))
+y$samples$group &lt;- allGroups
+
+plotMDS(y, col = c(&quot;red&quot;,&quot;deeppink&quot;,&quot;darkorange&quot;,&quot;gold&quot;,&quot;green2&quot;, &quot;green4&quot;,&quot;blue&quot;, &quot;purple&quot;)[factor(allGroups)], cex=0.6)</code></pre>
+<p><img src="edgeR_Script_files/figure-html/unnamed-chunk-60-1.png" width="624" /></p>
+<pre class="r"><code>plotMDS(y, col = c(&quot;blue&quot;,&quot;blue&quot;,&quot;blue&quot;,&quot;blue&quot;,&quot;red&quot;,&quot;red&quot;,&quot;red&quot;,&quot;red&quot;)[factor(allGroups)], cex=0.6)</code></pre>
+<p><img src="edgeR_Script_files/figure-html/unnamed-chunk-60-2.png" width="624" /></p>
+<pre class="r"><code>plotMDS(y, col = c(&quot;white&quot;,&quot;blue&quot;,&quot;white&quot;,&quot;red&quot;,&quot;white&quot;,&quot;white&quot;,&quot;white&quot;,&quot;white&quot;)[factor(allGroups)], cex=0.6)</code></pre>
+<p><img src="edgeR_Script_files/figure-html/unnamed-chunk-60-3.png" width="624" /></p>
+<pre class="r"><code>plotMDS(y, col = c(&quot;white&quot;,&quot;white&quot;,&quot;white&quot;,&quot;white&quot;,&quot;white&quot;,&quot;blue&quot;,&quot;white&quot;,&quot;red&quot;)[factor(allGroups)], cex=0.6)</code></pre>
+<p><img src="edgeR_Script_files/figure-html/unnamed-chunk-60-4.png" width="624" /></p>
+<pre class="r"><code>plotMDS(y, col = c(&quot;white&quot;,&quot;blue&quot;,&quot;white&quot;,&quot;white&quot;,&quot;white&quot;,&quot;white&quot;,&quot;white&quot;,&quot;red&quot;)[factor(allGroups)], cex=0.6)</code></pre>
+<p><img src="edgeR_Script_files/figure-html/unnamed-chunk-60-5.png" width="624" /></p>
+<p>Copying Section (3.3.1 in edgeR vignette)</p>
+<pre class="r"><code>Group = factor(c(rep(&quot;NC&quot;,6), rep(&quot;NP&quot;,6), rep(&quot;NR&quot;,6), rep(&quot;NS&quot;,6), rep(&quot;VC&quot;,6), rep(&quot;VP&quot;,6), rep(&quot;VR&quot;,6), rep(&quot;VS&quot;,6)))
+targets &lt;- data.frame(rownames=paste0(&quot;Sample&quot;,1:48), Virus = c(rep(&quot;N&quot;,24), rep(&quot;V&quot;,24)), Diet = c(rep(&quot;C&quot;,6), rep(&quot;P&quot;,6), rep(&quot;R&quot;,6), rep(&quot;S&quot;,6), rep(&quot;C&quot;,6), rep(&quot;P&quot;,6), rep(&quot;R&quot;,6), rep(&quot;S&quot;,6)), 
+Group = Group)
+design &lt;- model.matrix(~0+Group, data=y$samples)
+colnames(design) &lt;- levels(Group)
+y &lt;- estimateDisp(y, design)
+plotBCV(y)</code></pre>
+<p><img src="edgeR_Script_files/figure-html/unnamed-chunk-61-1.png" width="624" /></p>
+<pre class="r"><code>fit &lt;- glmFit(y, design)
+
+myContrasts &lt;- makeContrasts(
+  VvsN = (VC+VS+VP+VR)-(NC+NS+NP+NR),
+  NSvsNP = NS-NP,
+  VSvsVP = VS-VP,
+  NPvsVS = NP-VS,
+  NSNPvVSVP = (NS-NP)-(VS-VP),
+levels=design)</code></pre>
+<p>Contained 188 DEGs</p>
+<pre class="r"><code>VvsN_DEG &lt;- glmLRT(fit, contrast=myContrasts[,&quot;VvsN&quot;])
+VvsN_DEG  &lt;- topTags(VvsN_DEG, n = nrow(y[[1]]))[[1]]
+VvsN_DEG &lt;- VvsN_DEG[which(VvsN_DEG$FDR&lt;0.05),]</code></pre>
+<p>Contained 2,464 DEGs</p>
+<pre class="r"><code>NSvsNP_DEG &lt;- glmLRT(fit, contrast=myContrasts[,&quot;NSvsNP&quot;])
+NSvsNP_DEG  &lt;- topTags(NSvsNP_DEG, n = nrow(y[[1]]))[[1]]
+NSvsNP_DEG &lt;- NSvsNP_DEG[which(NSvsNP_DEG$FDR&lt;0.05),]</code></pre>
+<p>Contained 23 DEGs</p>
+<pre class="r"><code>VSvsVP_DEG &lt;- glmLRT(fit, contrast=myContrasts[,&quot;VSvsVP&quot;])
+VSvsVP_DEG  &lt;- topTags(VSvsVP_DEG, n = nrow(y[[1]]))[[1]]
+VSvsVP_DEG &lt;- NSvsNP_DEG[which(VSvsVP_DEG$FDR&lt;0.05),]</code></pre>
+<p>Contained 2,144 DEGs</p>
+<pre class="r"><code>NPvsVS_DEG &lt;- glmLRT(fit, contrast=myContrasts[,&quot;NPvsVS&quot;])
+NPvsVS_DEG  &lt;- topTags(NPvsVS_DEG, n = nrow(y[[1]]))[[1]]
+NPvsVS_DEG &lt;- NSvsNP_DEG[which(NPvsVS_DEG$FDR&lt;0.05),]</code></pre>
+<p>Contained 0 DEGs</p>
+<pre class="r"><code>NSNPvVSVP_DEG &lt;- glmLRT(fit, contrast=myContrasts[,&quot;NSNPvVSVP&quot;])
+NSNPvVSVP_DEG  &lt;- topTags(NSNPvVSVP_DEG, n = nrow(y[[1]]))[[1]]
+NSNPvVSVP_DEG &lt;- NSNPvVSVP_DEG[which(NSNPvVSVP_DEG$FDR&lt;0.05),]</code></pre>
+<p>Below we save the DEGs from all pairwise combinations of treatment groups.</p>
+<pre class="r"><code>allPairs = data.frame(Treatment1 = factor(), Treatment2 = factor(), NumberDEG = numeric())
+
+for (i in 1:(ncol(fit)-1)){
+  for (j in (i+1):ncol(fit)){
+    contrast=rep(0,ncol(fit))
+    contrast[i]=1
+    contrast[j]=-1
+    lrt &lt;- glmLRT(fit, contrast=contrast)
+    lrt &lt;- topTags(lrt, n = nrow(y[[1]]))[[1]]
+    lrt &lt;- lrt[which(lrt$FDR&lt;0.05),]
+    saveRDS(lrt, file=paste0(thisPath, &quot;/DEGPairs/&quot;, colnames(fit)[i], colnames(fit)[j],&quot;.Rds&quot;))
+    lrtLength &lt;- nrow(lrt)
+    allPairs = rbind(allPairs, data.frame(Treatment1 = factor(colnames(fit)[i]), Treatment2 = factor(colnames(fit)[j]), NumberDEG = lrtLength))
+  }
+}
+allPairs &lt;- allPairs[order(allPairs$NumberDEG),]
+saveRDS(allPairs, file=paste0(thisPath, &quot;/DEGPairs/allPairs.Rds&quot;))</code></pre>
+<pre class="r"><code>allPairs</code></pre>
+<pre><code>   Treatment1 Treatment2 NumberDEG
+1          NC         NP         0
+3          NC         NS         0
+4          NC         VC         0
+19         NS         VC         0
+22         NS         VS         0
+25         VC         VS         0
+7          NC         VS         2
+26         VP         VR         9
+11         NP         VP        13
+23         VC         VP        19
+27         VP         VS        23
+5          NC         VP        24
+17         NR         VR        66
+8          NP         NR        82
+16         NR         VP       113
+24         VC         VR       151
+28         VR         VS       205
+10         NP         VC       396
+12         NP         VR       430
+6          NC         VR       478
+15         NR         VC       575
+2          NC         NR       702
+20         NS         VP       927
+21         NS         VR      1341
+18         NR         VS      1801
+13         NP         VS      2144
+14         NR         NS      2444
+9          NP         NS      2464</code></pre>
+
+
+      </div>
+    </div>
+  </div>
+
+  <div id="footer">
+    <div class="container">
+      <div class="col-md-6">
+              </div>
+      <div class="col-md-6">
+        <p class="pull-right">created with <a href="https://github.com/hafen/packagedocs">packagedocs</a>
+                  </p>
+      </div>
+    </div>
+  </div>
+
+  
+</body>
+</html>

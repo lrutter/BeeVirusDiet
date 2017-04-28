@@ -1,28 +1,69 @@
 {\rtf1\ansi\ansicpg1252\cocoartf1265\cocoasubrtf210
 {\fonttbl\f0\fswiss\fcharset0 Helvetica;}
-{\colortbl;\red255\green255\blue255;}
-\margl1440\margr1440\vieww5960\viewh8400\viewkind0
+{\colortbl;\red255\green255\blue255;\red114\green44\blue253;\red218\green119\blue254;\red254\green209\blue100;
+}
+\margl1440\margr1440\vieww7220\viewh11500\viewkind0
 \pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
 
 \f0\b\fs24 \cf0 \ul \ulc0 \
-\
 edgeR
 \b0 \ulnone \
 - Followed edgeR protocol\
 y <- DGEList(counts=beeCounts)\
 keep <- rowSums(cpm(y)>3) >= 24\
 y <- y[keep, , keep.lib.sizes=FALSE]\
-yERN <- calcNormFactors(y)\
+y <- calcNormFactors(y)\
 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\b \cf0 \ul \ulc0 \CocoaLigature0 edgeR-btwnLane
+\b0 \ulnone \CocoaLigature1 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
+\cf0 y <- DGEList(counts=beeCounts)\
+keep <- rowSums(cpm(y)>3) >= 24\
+y <- y[keep, , keep.lib.sizes=FALSE]\
+\cf2 y[[1]] <- cpm(y, TRUE, TRUE) #Make them negative, so can\'92t estimate dispersions (must be non-negative) So removed this.\cf0 \
+y[[1]] <- betweenLaneNormalization(y[[1]], which="full", round=FALSE)\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
+\cf0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
+
+\b \cf0 \ul \ulc0 edgeR-QFilter
+\b0 \ulnone \
+y <- DGEList(counts=beeCounts)\
+keep <- rowSums(cpm(y)>3) >= 24\
+y <- y[keep, , keep.lib.sizes=FALSE]\
+Quartile filtering\
+y <- calcNormFactors(y)\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
+\cf2 # should do calcNorm beforehand quartile filtering?\cf0 \
 \
-\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
+
+\b \cf0 \ul \ulc0 edgeR-btwnLane-QFilter
+\b0 \ulnone \
+y <- DGEList(counts=beeCounts)\
+keep <- rowSums(cpm(y)>3) >= 24\
+y <- y[keep, , keep.lib.sizes=FALSE]\
+Quartile filtering\
+y[[1]] <- betweenLaneNormalization(y[[1]], which="full", round=FALSE)\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
+\cf0 \
 
 \b \ul Convert .Rmd to .html:
 \b0 \ulnone \
 library(rmarkdown)\
 render("edgeR/fnScript.Rmd")\
 \
+
+\b \cb3 \ul April 27
+\b0 \cb1 \ulnone \
 \
+
+\b \cb4 \ul beeDataFN.rds 
+\b0 \cb1 \ulnone = Saving 
+\b \ul edgeR
+\b0 \ulnone  data (8,581 genes left after edgeR filtering and calcNormFactors)\
 \pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
 \cf0 \
 \
