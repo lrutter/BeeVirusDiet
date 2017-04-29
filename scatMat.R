@@ -28,7 +28,7 @@ server <- shinyServer(function(input, output) {
   colGroups <- sapply(colNames, function(x) unlist(strsplit(x,"[.]"))[1])
     
   output$selInput <- renderUI({
-    checkboxGroupInput("selPair", "Choose groups:", myPairs)
+    checkboxGroupInput("selPair", "Choose groups:", myPairs, inline = TRUE)
   })
   
   output$test <- renderPrint({
@@ -202,6 +202,7 @@ server <- shinyServer(function(input, output) {
     
     ggBP %>% onRender("
     function(el, x, data) {
+    console.log('redraw PCP and box')
 
     var Traces = [];
 
