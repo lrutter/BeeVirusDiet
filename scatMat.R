@@ -11,18 +11,11 @@ library(dplyr)
 library(data.table)
 
 ui <- shinyUI(fluidPage(
-  sidebarLayout(
-    sidebarPanel(
       uiOutput("selInput"),
-      uiOutput("go")
-    ),
-    mainPanel(
-      verbatimTextOutput("test"),
-      verbatimTextOutput("test2"),
+      uiOutput("go"),
       plotlyOutput("scatMatPlot", height = 700),
       plotlyOutput("boxPlot")
-    )))
-)
+))
 
 server <- shinyServer(function(input, output) {
 
