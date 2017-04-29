@@ -19,16 +19,15 @@ ui <- shinyUI(fluidPage(
     mainPanel(
       verbatimTextOutput("test"),
       verbatimTextOutput("test2"),
-      plotlyOutput("scatMatPlot", height = 700)
-      #plotlyOutput("boxPlot"),
-      #verbatimTextOutput("selectedValues")
+      plotlyOutput("scatMatPlot", height = 700),
+      plotlyOutput("boxPlot")
     )))
 )
 
 server <- shinyServer(function(input, output) {
 
   set.seed(1)
-  bindata <- data.frame(ID = paste0("ID",1:100), A.1=rnorm(100), A.2=rnorm(100), A.3=rnorm(100), B.1=rnorm(100), B.2=rnorm(100), C.1=rnorm(100), C.2=rnorm(100))
+  bindata <- data.frame(ID = paste0("ID",1:100), A.1=abs(rnorm(100)), A.2=abs(rnorm(100)), A.3=abs(rnorm(100)), B.1=abs(rnorm(100)), B.2=abs(rnorm(100)), C.1=abs(rnorm(100)), C.2=abs(rnorm(100)))
   bindata$ID <- as.character(bindata$ID)
   colNames <- colnames(bindata)
   myPairs <- unique(sapply(colNames, function(x) unlist(strsplit(x,"[.]"))[1]))
@@ -63,8 +62,8 @@ server <- shinyServer(function(input, output) {
     # will wait to render until datInput is validated
     bindataSel <- datInput()
     maxVal = max(abs(bindataSel[,-1]))
-    maxRange = c(-1*maxVal, maxVal)
-    #maxRange = c(0, maxVal)
+    #maxRange = c(-1*maxVal, maxVal)
+    maxRange = c(0, maxVal)
 
     my_fn <- function(data, mapping, ...){
       x = data[,c(as.character(mapping$x))]
@@ -192,51 +191,54 @@ server <- shinyServer(function(input, output) {
     ", data = bindataSel)
   })
 
-  #   selID <- reactive(input$selID)
-  # 
-  # pcpDat <- reactive(bindata[which(bindata$ID %in% selID()), c(1:(p$nrow+1))])
-  # output$selectedValues <- renderPrint({str(pcpDat())})
-  # colNms <- colnames(bindata[, c(2:(p$nrow+1))])
-  # 
-  # boxDat <- bindata[, c(1:(p$nrow+1))] %>% gather(key, val, -c(ID))
-  # BP <- ggplot(boxDat, aes(x = key, y = val)) + geom_boxplot()
-  # ggBP <- ggplotly(BP)
+  # Only updated with input$selID changes
+  pointsInput <- eventReactive(input$selID, {
+    cbind(ID=bindata$ID, bindata[,which(colGroups %in% input$selPair)])
+  })
   
-  # output$boxPlot <- renderPlotly({
-  #   ggBP %>% onRender("
-  #   function(el, x, data) {
-  #   
-  #   var Traces = [];
-  #   
-  #   var dLength = data.pcpDat.length
-  #   var vLength = data.nVar
-  #   var cNames = data.colNms
-  #   
-  #   for (a=0; a<dLength; a++){
-  #   xArr = [];
-  #   yArr = [];
-  #   for (b=0; b<vLength; b++){
-  #   xArr.push(b+1)
-  #   yArr.push(data.pcpDat[a][cNames[b]]);
-  #   }
-  #   
-  #   var traceHiLine = {
-  #   x: xArr,
-  #   y: yArr,
-  #   mode: 'lines',
-  #   line: {
-  #   color: 'orange',
-  #   width: 1
-  #   },
-  #   opacity: 0.9,
-  #   }
-  #   Traces.push(traceHiLine);
-  #   }
-  #   Plotly.addTraces(el.id, Traces);
-  #   
-  #   }", data = list(pcpDat = pcpDat(), nVar = p$nrow, colNms = colNms))})
+  selID <- reactive(input$selID)
+  
+  output$boxPlot <- renderPlotly({
+    bindataSel <- pointsInput()
+    pcpDat <- reactive(bindataSel[which(bindataSel$ID %in% selID()), c(1:(ncol(bindataSel)))])
+    colNms <- colnames(bindataSel[, c(2:(ncol(bindataSel)))])
+
+    boxDat <- bindataSel[, c(1:(ncol(bindataSel)))] %>% gather(key, val, -c(ID))
+    BP <- ggplot(boxDat, aes(x = key, y = val)) + geom_boxplot()
+    ggBP <- ggplotly(BP)
+    
+    ggBP %>% onRender("
+    function(el, x, data) {
+
+    var Traces = [];
+
+    var dLength = data.pcpDat.length
+    var vLength = data.nVar
+    var cNames = data.colNms
+
+    for (a=0; a<dLength; a++){
+    xArr = [];
+    yArr = [];
+    for (b=0; b<vLength; b++){
+    xArr.push(b+1)
+    yArr.push(data.pcpDat[a][cNames[b]]);
+    }
+
+    var traceHiLine = {
+    x: xArr,
+    y: yArr,
+    mode: 'lines',
+    line: {
+    color: 'orange',
+    width: 1
+    },
+    opacity: 0.9,
+    }
+    Traces.push(traceHiLine);
+    }
+    Plotly.addTraces(el.id, Traces);
+
+    }", data = list(pcpDat = pcpDat(), nVar = p$nrow, colNms = colNms))})
 })
 
 shinyApp(ui, server)
-
-
