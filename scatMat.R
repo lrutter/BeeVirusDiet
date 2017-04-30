@@ -203,6 +203,12 @@ server <- shinyServer(function(input, output) {
       function(el, x, data) {
       console.log('redraw PCP and box')
       
+      function range(start, stop, step){
+        var a=[start], b=start;
+        while(b<stop){b+=step;a.push(b)}
+        return a;
+      };
+      
       var Traces = [];
       
       var dLength = data.pcpDat.length
@@ -230,8 +236,9 @@ server <- shinyServer(function(input, output) {
       Traces.push(traceHiLine);
       }
       Plotly.addTraces(el.id, Traces);
-      Plotly.deleteTraces(el.id, data.pcpDat.length);
-      
+$('#goButton').on('click',function() {
+      Plotly.deleteTraces(el.id, range(1, data.pcpDat.length, 1));
+})
       }", data = list(pcpDat = pcpDat(), nVar = nVar, colNms = colNms))})
 })
 
