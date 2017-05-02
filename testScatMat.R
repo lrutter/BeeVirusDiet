@@ -53,14 +53,16 @@ server <- shinyServer(function(input, output) {
     maxVal = max(abs(bindataSel[,-1]))
     #maxRange = c(-1*maxVal, maxVal)
     maxRange = c(0, maxVal)
+    xbins=10
+    buffer = maxRange[2]/xbins
     
     my_fn <- function(data, mapping, ...){
       x = data[,c(as.character(mapping$x))]
       y = data[,c(as.character(mapping$y))]
-      h <- hexbin(x=x, y=y, xbins=10, shape=1, IDs=TRUE, xbnds=maxRange, ybnds=maxRange)
+      h <- hexbin(x=x, y=y, xbins=xbins, shape=1, IDs=TRUE, xbnds=maxRange, ybnds=maxRange)
       hexdf <- data.frame (hcell2xy (h),  hexID = h@cell, counts = h@count)
       attr(hexdf, "cID") <- h@cID
-      p <- ggplot(hexdf, aes(x=x, y=y, fill = counts, hexID=hexID)) + geom_hex(stat="identity") + geom_abline(intercept = 0, color = "red", size = 0.25) + coord_cartesian(xlim = c(-0.5, maxRange[2]+0.5), ylim = c(-0.5, maxRange[2]+0.5))
+      p <- ggplot(hexdf, aes(x=x, y=y, fill = counts, hexID=hexID)) + geom_hex(stat="identity") + geom_abline(intercept = 0, color = "red", size = 0.25) + coord_cartesian(xlim = c(-1*buffer, maxRange[2]+buffer), ylim = c(-1*buffer, maxRange[2]+buffer))
       p
     }
     
@@ -68,7 +70,8 @@ server <- shinyServer(function(input, output) {
     pS <- p
     
     ggPS <- ggplotly(pS)
-
+    #ggPS <- ggplotly(p)
+    
     myLength <- length(ggPS[["x"]][["data"]])
     for (i in 1:myLength){
       item =ggPS[["x"]][["data"]][[i]]$text[1]
@@ -107,7 +110,7 @@ server <- shinyServer(function(input, output) {
       noPoint = x.data.length;
       
       el.on('plotly_click', function(e) {
-
+      
       if (x.data.length > noPoint){
       Plotly.deleteTraces(el.id, range(noPoint, (noPoint+(len*(len-1)/2-1)), 1));
       }
@@ -130,6 +133,7 @@ server <- shinyServer(function(input, output) {
       for (a=0; a<selRows.length; a++){
       selID.push(selRows[a]['ID'])
       }
+console.log(['selID',selID])
       // Save selected row IDs for PCP
       Shiny.onInputChange('selID', selID);
       
@@ -169,15 +173,11 @@ server <- shinyServer(function(input, output) {
       ", data = bindataSel)
   })
   
-  # Only updated with input$selID changes
-  pointsInput <- eventReactive(input$selID, {
-    cbind(ID=bindata$ID, bindata[,which(colGroups %in% input$selPair)])
-  })
-  
   selID <- reactive(input$selID)
   
   output$boxPlot <- renderPlotly({
-    bindataSel <- pointsInput()
+    
+    bindataSel <- datInput()
     bindataSel[2:ncol(bindataSel)] = log(bindataSel[2:ncol(bindataSel)]/colMeans(bindataSel[2:ncol(bindataSel)]))
     nVar = ncol(bindataSel)
     pcpDat <- reactive(bindataSel[which(bindataSel$ID %in% selID()), c(1:nVar)])
@@ -193,6 +193,10 @@ server <- shinyServer(function(input, output) {
     ggBP %>% onRender("
       function(el, x, data) {
       console.log('redraw PCP and box')
+
+$('#selID').on('click',function() {
+      console.log('newPointsSelected')
+})
       
       function range(start, stop, step){
       var a=[start], b=start;
@@ -227,11 +231,11 @@ server <- shinyServer(function(input, output) {
       Traces.push(traceHiLine);
       }
       Plotly.addTraces(el.id, Traces);
-$('#goButton').on('click',function() {
-      console.log('goButtonChangePCP')
-      console.log(range(1, data.pcpDat.length, 1))
-      Plotly.deleteTraces(el.id, range(1, data.pcpDat.length, 1));
-})
+      //$('#goButton').on('click',function() {
+      //console.log('goButtonChangePCP')
+      //console.log(range(1, data.pcpDat.length, 1))
+      //Plotly.deleteTraces(el.id, range(1, data.pcpDat.length, 1));
+      //})
       }", data = list(pcpDat = pcpDat(), nVar = nVar, colNms = colNms))})
 })
 
