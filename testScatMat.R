@@ -92,7 +92,7 @@ server <- shinyServer(function(input, output) {
         bindataSel[[paste(i,j,sep="-")]] <- attr(pS[i,j]$data, "cID")
       }
     }
-    
+
     ggPS %>% onRender("
       function(el, x, data) {
       
@@ -103,10 +103,14 @@ server <- shinyServer(function(input, output) {
       };
       
       len = Math.sqrt(document.getElementsByClassName('cartesianlayer')[0].childNodes.length);
+
+      var AxisNamesKeys = Object.keys(data[0]);
+
       AxisNames = [];
       for (i = 1; i < (len+1); i++) {
-      AxisNames.push(document.getElementsByClassName('infolayer')[0].childNodes[i].textContent);
+        AxisNames.push(AxisNamesKeys[i])
       }
+
       noPoint = x.data.length;
       
       el.on('plotly_click', function(e) {
@@ -124,7 +128,6 @@ server <- shinyServer(function(input, output) {
       cN = e.points[0].curveNumber
       split1 = (x.data[cN].text).split(' ')
       hexID = (x.data[cN].t2).split(':')[2]
-      counts = split1[1].split('<')[0]
       var selRows = [];
       data.forEach(function(row){
       if(row[myX+'-'+myY]==hexID) selRows.push(row);
@@ -133,7 +136,6 @@ server <- shinyServer(function(input, output) {
       for (a=0; a<selRows.length; a++){
       selID.push(selRows[a]['ID'])
       }
-console.log(['selID',selID])
       // Save selected row IDs for PCP
       Shiny.onInputChange('selID', selID);
       
@@ -184,10 +186,11 @@ console.log(['selID',selID])
     colNms <- colnames(bindataSel[, c(2:nVar)])
     
     boxDat <- bindataSel[, c(1:nVar)] %>% gather(key, val, -c(ID))
+    colnames(boxDat) <- c("ID", "Sample", "Count")
     
     output$selectedValues <- renderPrint({str(boxDat)})
     
-    BP <- ggplot(boxDat, aes(x = key, y = val)) + geom_boxplot()
+    BP <- ggplot(boxDat, aes(x = Sample, y = Count)) + geom_boxplot()
     ggBP <- ggplotly(BP)
     
     ggBP %>% onRender("
