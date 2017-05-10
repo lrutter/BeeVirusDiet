@@ -197,9 +197,6 @@ server <- shinyServer(function(input, output) {
       function(el, x, data) {
       console.log('redraw PCP and box')
 
-$('#selID').on('click',function() {
-      console.log('newPointsSelected')
-})
       
       function range(start, stop, step){
       var a=[start], b=start;
@@ -212,11 +209,15 @@ $('#selID').on('click',function() {
       var dLength = data.pcpDat.length
       var vLength = data.nVar
       var cNames = data.colNms
+
+console.log(['dLength', dLength])
+console.log(['vLength', vLength])
+console.log(['cNames', cNames])
       
       for (a=0; a<dLength; a++){
       xArr = [];
       yArr = [];
-      for (b=0; b<vLength; b++){
+      for (b=0; b<(vLength-1); b++){
       xArr.push(b+1)
       yArr.push(data.pcpDat[a][cNames[b]]);
       }
@@ -234,11 +235,7 @@ $('#selID').on('click',function() {
       Traces.push(traceHiLine);
       }
       Plotly.addTraces(el.id, Traces);
-      //$('#goButton').on('click',function() {
-      //console.log('goButtonChangePCP')
-      //console.log(range(1, data.pcpDat.length, 1))
-      //Plotly.deleteTraces(el.id, range(1, data.pcpDat.length, 1));
-      //})
+
       }", data = list(pcpDat = pcpDat(), nVar = nVar, colNms = colNms))})
 })
 

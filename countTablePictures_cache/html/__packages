@@ -20,3 +20,12 @@ ShortRead
 EDASeq
 broom
 rmarkdown
+gtools
+tibble
+readr
+data.table
+shiny
+plotly
+hexbin
+htmlwidgets
+tidyr
