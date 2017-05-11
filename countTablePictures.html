@@ -71,20 +71,27 @@ colnames(beeCounts) &lt;- c(&quot;NC.1&quot;, &quot;NC.2&quot;, &quot;NR.1&quot;
 
 beeCounts &lt;- beeCounts[ , order(names(beeCounts))]
 
+laneInfo &lt;- c(&quot;L12&quot;,&quot;L12&quot;,&quot;L12&quot;,&quot;L12&quot;,&quot;L34&quot;,&quot;L34&quot;,&quot;L12&quot;,&quot;L12&quot;,&quot;L12&quot;,&quot;L12&quot;,&quot;L34&quot;,&quot;L34&quot;,&quot;L12&quot;,&quot;L12&quot;,&quot;L34&quot;,&quot;L34&quot;,&quot;L34&quot;,&quot;L34&quot;,&quot;L12&quot;,&quot;L12&quot;,&quot;L34&quot;,&quot;L34&quot;,&quot;L34&quot;,&quot;L34&quot;,&quot;L12&quot;,&quot;L12&quot;,&quot;L12&quot;,&quot;L12&quot;,&quot;L34&quot;,&quot;L34&quot;,&quot;L12&quot;,&quot;L12&quot;,&quot;L12&quot;,&quot;L12&quot;,&quot;L34&quot;,&quot;L34&quot;,&quot;L12&quot;,&quot;L12&quot;,&quot;L34&quot;,&quot;L34&quot;,&quot;L34&quot;,&quot;L34&quot;,&quot;L12&quot;,&quot;L12&quot;,&quot;L34&quot;,&quot;L34&quot;,&quot;L34&quot;,&quot;L34&quot;)
+
 y &lt;- DGEList(counts=beeCounts)</code></pre>
 <pre class="r"><code>libSizeB4 &lt;- y[[2]]
 libSizeB4$group &lt;- unlist(lapply(rownames(libSizeB4), function(x) unlist(strsplit(x,&quot;\\.&quot;))[1]))
+libSizeB4$laneInfo &lt;- laneInfo
 
-ggplot(libSizeB4, aes(x=rownames(libSizeB4), y=lib.size, fill=group, las=3)) + geom_bar(position=position_dodge(), stat=&quot;identity&quot;, colour=&quot;black&quot;, size=.3) + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + labs(x = &quot;Sample&quot;, y = &quot;Library size&quot;)# Use thin black outlines</code></pre>
-<p><img src="countTablePictures_files/figure-html/unnamed-chunk-41-1.png" width="960" /></p>
+ggplot(libSizeB4, aes(x=rownames(libSizeB4), y=lib.size, fill=laneInfo, las=3)) + geom_bar(position=position_dodge(), stat=&quot;identity&quot;, colour=&quot;black&quot;, size=.3) + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + labs(x = &quot;Sample&quot;, y = &quot;Library size&quot;)# Use thin black outlines</code></pre>
+<p><img src="countTablePictures_files/figure-html/unnamed-chunk-14-1.png" width="960" /></p>
+<pre class="r"><code>ggplot(libSizeB4, aes(x=rownames(libSizeB4), y=lib.size, fill=group, las=3)) + geom_bar(position=position_dodge(), stat=&quot;identity&quot;, colour=&quot;black&quot;, size=.3) + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + labs(x = &quot;Sample&quot;, y = &quot;Library size&quot;)# Use thin black outlines</code></pre>
+<p><img src="countTablePictures_files/figure-html/unnamed-chunk-14-2.png" width="960" /></p>
 <pre class="r"><code>libSizeB4 &lt;- libSizeB4[with(libSizeB4, order(lib.size)), ]
 
-ggplot(libSizeB4, aes(x=as.factor(lib.size), y=lib.size, fill=group)) + geom_bar(position=position_dodge(), stat=&quot;identity&quot;, colour=&quot;black&quot;, size=.3) + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + labs(x = &quot;Sample&quot;, y = &quot;Library size&quot;) + scale_x_discrete(labels=row.names(libSizeB4))</code></pre>
-<p><img src="countTablePictures_files/figure-html/unnamed-chunk-41-2.png" width="960" /></p>
+ggplot(libSizeB4, aes(x=as.factor(lib.size), y=lib.size, fill=laneInfo)) + geom_bar(position=position_dodge(), stat=&quot;identity&quot;, colour=&quot;black&quot;, size=.3) + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + labs(x = &quot;Sample&quot;, y = &quot;Library size&quot;) + scale_x_discrete(labels=row.names(libSizeB4))</code></pre>
+<p><img src="countTablePictures_files/figure-html/unnamed-chunk-14-3.png" width="960" /></p>
+<pre class="r"><code>ggplot(libSizeB4, aes(x=as.factor(lib.size), y=lib.size, fill=group)) + geom_bar(position=position_dodge(), stat=&quot;identity&quot;, colour=&quot;black&quot;, size=.3) + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + labs(x = &quot;Sample&quot;, y = &quot;Library size&quot;) + scale_x_discrete(labels=row.names(libSizeB4))</code></pre>
+<p><img src="countTablePictures_files/figure-html/unnamed-chunk-14-4.png" width="960" /></p>
 <pre class="r"><code>libSizeB4 &lt;- libSizeB4 %&gt;% group_by(group) %&gt;% summarise(mean = mean(lib.size), sd = sd(lib.size))
 
 ggplot(libSizeB4, aes(x=group, y=mean, fill=group)) + geom_bar(position=position_dodge(), stat=&quot;identity&quot;, colour=&quot;black&quot;, size=.3) + geom_errorbar(aes(ymin=mean-sd, ymax=mean+sd), size=.3, width=.2, position=position_dodge(.9))</code></pre>
-<p><img src="countTablePictures_files/figure-html/unnamed-chunk-41-3.png" width="960" /></p>
+<p><img src="countTablePictures_files/figure-html/unnamed-chunk-14-5.png" width="960" /></p>
 <pre class="r"><code>################## Strict edgeR Filtering ################## 
 # Smallest library has 3,044,259 reads
 minLib &lt;- min(y$samples$lib.size)
@@ -99,11 +106,11 @@ libSize &lt;- y[[2]]
 libSize$group &lt;- unlist(lapply(rownames(libSize), function(x) unlist(strsplit(x,&quot;\\.&quot;))[1]))
 
 ggplot(libSize, aes(x=rownames(libSize), y=lib.size, fill=group)) + geom_bar(position=position_dodge(), stat=&quot;identity&quot;, colour=&quot;black&quot;, size=.3) # Use thin black outlines</code></pre>
-<p><img src="countTablePictures_files/figure-html/unnamed-chunk-43-1.png" width="960" /></p>
+<p><img src="countTablePictures_files/figure-html/unnamed-chunk-16-1.png" width="960" /></p>
 <pre class="r"><code>libSize &lt;- libSize %&gt;% group_by(group) %&gt;% summarise(mean = mean(lib.size), sd = sd(lib.size))
 
 ggplot(libSize, aes(x=group, y=mean, fill=group)) + geom_bar(position=position_dodge(), stat=&quot;identity&quot;, colour=&quot;black&quot;, size=.3) + geom_errorbar(aes(ymin=mean-sd, ymax=mean+sd), size=.3, width=.2, position=position_dodge(.9))</code></pre>
-<p><img src="countTablePictures_files/figure-html/unnamed-chunk-43-2.png" width="960" /></p>
+<p><img src="countTablePictures_files/figure-html/unnamed-chunk-16-2.png" width="960" /></p>
 <pre class="r"><code># Comparison of library sizes before and after filtering
 
 #&gt; summary(libSizeB4)
@@ -125,19 +132,19 @@ libSize &lt;- yERN[[2]]</code></pre>
 
 # Cannot see much in this boxplot. Many large outliers.
 ggparcoord(data.frame(yERN[[1]]), columns=1:48, alphaLines=0, boxplot=TRUE, scale=&quot;globalminmax&quot;) + coord_flip()</code></pre>
-<p><img src="countTablePictures_files/figure-html/unnamed-chunk-45-1.png" width="960" /></p>
+<p><img src="countTablePictures_files/figure-html/unnamed-chunk-18-1.png" width="960" /></p>
 <pre class="r"><code>allGroups &lt;- c(rep(&quot;NC&quot;,6), rep(&quot;NN&quot;,6), rep(&quot;NP&quot;,6), rep(&quot;NR&quot;,6), rep(&quot;VC&quot;,6), rep(&quot;VN&quot;,6), rep(&quot;VP&quot;,6), rep(&quot;VR&quot;,6))
 yERN$samples$group &lt;- allGroups
 plotMDS(y, col = c(&quot;red&quot;,&quot;deeppink&quot;,&quot;darkorange&quot;,&quot;gold&quot;,&quot;green2&quot;, &quot;green4&quot;,&quot;blue&quot;, &quot;purple&quot;)[factor(allGroups)], cex=0.6)</code></pre>
-<p><img src="countTablePictures_files/figure-html/unnamed-chunk-45-2.png" width="960" /></p>
+<p><img src="countTablePictures_files/figure-html/unnamed-chunk-18-2.png" width="960" /></p>
 <pre class="r"><code>plotMDS(y, col = c(&quot;blue&quot;,&quot;blue&quot;,&quot;blue&quot;,&quot;blue&quot;,&quot;red&quot;,&quot;red&quot;,&quot;red&quot;,&quot;red&quot;)[factor(allGroups)], cex=0.6)</code></pre>
-<p><img src="countTablePictures_files/figure-html/unnamed-chunk-45-3.png" width="960" /></p>
+<p><img src="countTablePictures_files/figure-html/unnamed-chunk-18-3.png" width="960" /></p>
 <pre class="r"><code>plotMDS(y, col = c(&quot;white&quot;,&quot;red&quot;,&quot;blue&quot;,&quot;white&quot;,&quot;white&quot;,&quot;white&quot;,&quot;white&quot;,&quot;white&quot;)[factor(allGroups)], cex=0.6)</code></pre>
-<p><img src="countTablePictures_files/figure-html/unnamed-chunk-45-4.png" width="960" /></p>
+<p><img src="countTablePictures_files/figure-html/unnamed-chunk-18-4.png" width="960" /></p>
 <pre class="r"><code>plotMDS(y, col = c(&quot;white&quot;,&quot;white&quot;,&quot;white&quot;,&quot;white&quot;,&quot;white&quot;,&quot;red&quot;,&quot;blue&quot;,&quot;white&quot;)[factor(allGroups)], cex=0.6)</code></pre>
-<p><img src="countTablePictures_files/figure-html/unnamed-chunk-45-5.png" width="960" /></p>
+<p><img src="countTablePictures_files/figure-html/unnamed-chunk-18-5.png" width="960" /></p>
 <pre class="r"><code>plotMDS(y, col = c(&quot;white&quot;,&quot;white&quot;,&quot;blue&quot;,&quot;white&quot;,&quot;white&quot;,&quot;red&quot;,&quot;white&quot;,&quot;white&quot;)[factor(allGroups)], cex=0.6)</code></pre>
-<p><img src="countTablePictures_files/figure-html/unnamed-chunk-45-6.png" width="960" /></p>
+<p><img src="countTablePictures_files/figure-html/unnamed-chunk-18-6.png" width="960" /></p>
 <pre class="r"><code>######################## CPM as applied to L120 ##################### 
 #####################################################################
 
@@ -149,51 +156,51 @@ yCPM$samples$group &lt;- allGroups
 plotMDS(yCPM, col = c(&quot;red&quot;,&quot;deeppink&quot;,&quot;darkorange&quot;,&quot;gold&quot;,&quot;green2&quot;, &quot;green4&quot;,&quot;blue&quot;, &quot;purple&quot;)[factor(allGroups)], cex=0.6)</code></pre>
 <pre><code>Warning in cpm.default(x$counts, lib.size = lib.size, log = log,
 prior.count = prior.count): NaNs produced</code></pre>
-<p><img src="countTablePictures_files/figure-html/unnamed-chunk-46-1.png" width="960" /></p>
+<p><img src="countTablePictures_files/figure-html/unnamed-chunk-19-1.png" width="960" /></p>
 <pre class="r"><code>plotMDS(yCPM, col = c(&quot;blue&quot;,&quot;blue&quot;,&quot;blue&quot;,&quot;blue&quot;,&quot;red&quot;,&quot;red&quot;,&quot;red&quot;,&quot;red&quot;)[factor(allGroups)], cex=0.6)</code></pre>
 <pre><code>Warning in cpm.default(x$counts, lib.size = lib.size, log = log,
 prior.count = prior.count): NaNs produced</code></pre>
-<p><img src="countTablePictures_files/figure-html/unnamed-chunk-46-2.png" width="960" /></p>
+<p><img src="countTablePictures_files/figure-html/unnamed-chunk-19-2.png" width="960" /></p>
 <pre class="r"><code>plotMDS(yCPM, col = c(&quot;white&quot;,&quot;red&quot;,&quot;blue&quot;,&quot;white&quot;,&quot;white&quot;,&quot;white&quot;,&quot;white&quot;,&quot;white&quot;)[factor(allGroups)], cex=0.6)</code></pre>
 <pre><code>Warning in cpm.default(x$counts, lib.size = lib.size, log = log,
 prior.count = prior.count): NaNs produced</code></pre>
-<p><img src="countTablePictures_files/figure-html/unnamed-chunk-46-3.png" width="960" /></p>
+<p><img src="countTablePictures_files/figure-html/unnamed-chunk-19-3.png" width="960" /></p>
 <pre class="r"><code>plotMDS(yCPM, col = c(&quot;white&quot;,&quot;white&quot;,&quot;white&quot;,&quot;white&quot;,&quot;white&quot;,&quot;red&quot;,&quot;blue&quot;,&quot;white&quot;)[factor(allGroups)], cex=0.6)</code></pre>
 <pre><code>Warning in cpm.default(x$counts, lib.size = lib.size, log = log,
 prior.count = prior.count): NaNs produced</code></pre>
-<p><img src="countTablePictures_files/figure-html/unnamed-chunk-46-4.png" width="960" /></p>
+<p><img src="countTablePictures_files/figure-html/unnamed-chunk-19-4.png" width="960" /></p>
 <pre class="r"><code>plotMDS(yCPM, col = c(&quot;white&quot;,&quot;white&quot;,&quot;blue&quot;,&quot;white&quot;,&quot;white&quot;,&quot;red&quot;,&quot;white&quot;,&quot;white&quot;)[factor(allGroups)], cex=0.6)</code></pre>
 <pre><code>Warning in cpm.default(x$counts, lib.size = lib.size, log = log,
 prior.count = prior.count): NaNs produced</code></pre>
-<p><img src="countTablePictures_files/figure-html/unnamed-chunk-46-5.png" width="960" /></p>
+<p><img src="countTablePictures_files/figure-html/unnamed-chunk-19-5.png" width="960" /></p>
 <pre class="r"><code># BetweenLaneNormalization (on the cpm)
 
 yCPMN &lt;- yCPM
 yCPMN[[1]] &lt;- betweenLaneNormalization(yCPM[[1]], which=&quot;full&quot;, round=FALSE) #from EDASeq
 
 ggparcoord(data.frame(yCPMN[[1]]), columns=1:48, alphaLines=0, boxplot=TRUE, scale=&quot;globalminmax&quot;) + coord_flip()</code></pre>
-<p><img src="countTablePictures_files/figure-html/unnamed-chunk-47-1.png" width="960" /></p>
+<p><img src="countTablePictures_files/figure-html/unnamed-chunk-20-1.png" width="960" /></p>
 <pre class="r"><code>yCPMN$samples$group &lt;- allGroups
 plotMDS(yCPMN, col = c(&quot;red&quot;,&quot;deeppink&quot;,&quot;darkorange&quot;,&quot;gold&quot;,&quot;green2&quot;, &quot;green4&quot;,&quot;blue&quot;, &quot;purple&quot;)[factor(allGroups)], cex=0.6)</code></pre>
 <pre><code>Warning in cpm.default(x$counts, lib.size = lib.size, log = log,
 prior.count = prior.count): NaNs produced</code></pre>
-<p><img src="countTablePictures_files/figure-html/unnamed-chunk-47-2.png" width="960" /></p>
+<p><img src="countTablePictures_files/figure-html/unnamed-chunk-20-2.png" width="960" /></p>
 <pre class="r"><code>plotMDS(yCPMN, col = c(&quot;blue&quot;,&quot;blue&quot;,&quot;blue&quot;,&quot;blue&quot;,&quot;red&quot;,&quot;red&quot;,&quot;red&quot;,&quot;red&quot;)[factor(allGroups)], cex=0.6)</code></pre>
 <pre><code>Warning in cpm.default(x$counts, lib.size = lib.size, log = log,
 prior.count = prior.count): NaNs produced</code></pre>
-<p><img src="countTablePictures_files/figure-html/unnamed-chunk-47-3.png" width="960" /></p>
+<p><img src="countTablePictures_files/figure-html/unnamed-chunk-20-3.png" width="960" /></p>
 <pre class="r"><code>plotMDS(yCPMN, col = c(&quot;white&quot;,&quot;red&quot;,&quot;blue&quot;,&quot;white&quot;,&quot;white&quot;,&quot;white&quot;,&quot;white&quot;,&quot;white&quot;)[factor(allGroups)], cex=0.6)</code></pre>
 <pre><code>Warning in cpm.default(x$counts, lib.size = lib.size, log = log,
 prior.count = prior.count): NaNs produced</code></pre>
-<p><img src="countTablePictures_files/figure-html/unnamed-chunk-47-4.png" width="960" /></p>
+<p><img src="countTablePictures_files/figure-html/unnamed-chunk-20-4.png" width="960" /></p>
 <pre class="r"><code>plotMDS(yCPMN, col = c(&quot;white&quot;,&quot;white&quot;,&quot;white&quot;,&quot;white&quot;,&quot;white&quot;,&quot;red&quot;,&quot;blue&quot;,&quot;white&quot;)[factor(allGroups)], cex=0.6)</code></pre>
 <pre><code>Warning in cpm.default(x$counts, lib.size = lib.size, log = log,
 prior.count = prior.count): NaNs produced</code></pre>
-<p><img src="countTablePictures_files/figure-html/unnamed-chunk-47-5.png" width="960" /></p>
+<p><img src="countTablePictures_files/figure-html/unnamed-chunk-20-5.png" width="960" /></p>
 <pre class="r"><code>plotMDS(yCPMN, col = c(&quot;white&quot;,&quot;white&quot;,&quot;blue&quot;,&quot;white&quot;,&quot;white&quot;,&quot;red&quot;,&quot;white&quot;,&quot;white&quot;)[factor(allGroups)], cex=0.6)</code></pre>
 <pre><code>Warning in cpm.default(x$counts, lib.size = lib.size, log = log,
 prior.count = prior.count): NaNs produced</code></pre>
-<p><img src="countTablePictures_files/figure-html/unnamed-chunk-47-6.png" width="960" /></p>
+<p><img src="countTablePictures_files/figure-html/unnamed-chunk-20-6.png" width="960" /></p>
 <pre class="r"><code>######### Quantile filtering as on L120 ##########
 ################################################
 
@@ -221,7 +228,7 @@ yMutateQ1 = yMutateQ1[ , !(names(yMutateQ1) %in% c(&quot;mean&quot;,&quot;stdev&
 filt = filt[ , !(names(filt) %in% c(&quot;mean&quot;,&quot;stdev&quot;))]
 
 ggparcoord(data.frame(yMutateQ1), columns=1:48, alphaLines=0, boxplot=TRUE, scale=&quot;globalminmax&quot;) + coord_flip()</code></pre>
-<p><img src="countTablePictures_files/figure-html/unnamed-chunk-48-1.png" width="960" /></p>
+<p><img src="countTablePictures_files/figure-html/unnamed-chunk-21-1.png" width="960" /></p>
 <pre class="r"><code>yMutateQ1 = DGEList(counts=yMutateQ1)
 yMutateQ1 &lt;- calcNormFactors(yMutateQ1)</code></pre>
 <pre><code>Warning in .calcFactorWeighted(obs = x[, i], ref = x[, refColumn],
@@ -323,23 +330,23 @@ libsize.obs = lib.size[i], : NaNs produced</code></pre>
 plotMDS(yMutateQ1, col = c(&quot;red&quot;,&quot;deeppink&quot;,&quot;darkorange&quot;,&quot;gold&quot;,&quot;green2&quot;, &quot;green4&quot;,&quot;blue&quot;, &quot;purple&quot;)[factor(allGroups)], cex=0.6)</code></pre>
 <pre><code>Warning in cpm.default(x$counts, lib.size = lib.size, log = log,
 prior.count = prior.count): NaNs produced</code></pre>
-<p><img src="countTablePictures_files/figure-html/unnamed-chunk-48-2.png" width="960" /></p>
+<p><img src="countTablePictures_files/figure-html/unnamed-chunk-21-2.png" width="960" /></p>
 <pre class="r"><code>plotMDS(yMutateQ1, col = c(&quot;blue&quot;,&quot;blue&quot;,&quot;blue&quot;,&quot;blue&quot;,&quot;red&quot;,&quot;red&quot;,&quot;red&quot;,&quot;red&quot;)[factor(allGroups)], cex=0.6)</code></pre>
 <pre><code>Warning in cpm.default(x$counts, lib.size = lib.size, log = log,
 prior.count = prior.count): NaNs produced</code></pre>
-<p><img src="countTablePictures_files/figure-html/unnamed-chunk-48-3.png" width="960" /></p>
+<p><img src="countTablePictures_files/figure-html/unnamed-chunk-21-3.png" width="960" /></p>
 <pre class="r"><code>plotMDS(yMutateQ1, col = c(&quot;white&quot;,&quot;red&quot;,&quot;blue&quot;,&quot;white&quot;,&quot;white&quot;,&quot;white&quot;,&quot;white&quot;,&quot;white&quot;)[factor(allGroups)], cex=0.6)</code></pre>
 <pre><code>Warning in cpm.default(x$counts, lib.size = lib.size, log = log,
 prior.count = prior.count): NaNs produced</code></pre>
-<p><img src="countTablePictures_files/figure-html/unnamed-chunk-48-4.png" width="960" /></p>
+<p><img src="countTablePictures_files/figure-html/unnamed-chunk-21-4.png" width="960" /></p>
 <pre class="r"><code>plotMDS(yMutateQ1, col = c(&quot;white&quot;,&quot;white&quot;,&quot;white&quot;,&quot;white&quot;,&quot;white&quot;,&quot;red&quot;,&quot;blue&quot;,&quot;white&quot;)[factor(allGroups)], cex=0.6)</code></pre>
 <pre><code>Warning in cpm.default(x$counts, lib.size = lib.size, log = log,
 prior.count = prior.count): NaNs produced</code></pre>
-<p><img src="countTablePictures_files/figure-html/unnamed-chunk-48-5.png" width="960" /></p>
+<p><img src="countTablePictures_files/figure-html/unnamed-chunk-21-5.png" width="960" /></p>
 <pre class="r"><code>plotMDS(yMutateQ1, col = c(&quot;white&quot;,&quot;white&quot;,&quot;blue&quot;,&quot;white&quot;,&quot;white&quot;,&quot;red&quot;,&quot;white&quot;,&quot;white&quot;)[factor(allGroups)], cex=0.6)</code></pre>
 <pre><code>Warning in cpm.default(x$counts, lib.size = lib.size, log = log,
 prior.count = prior.count): NaNs produced</code></pre>
-<p><img src="countTablePictures_files/figure-html/unnamed-chunk-48-6.png" width="960" /></p>
+<p><img src="countTablePictures_files/figure-html/unnamed-chunk-21-6.png" width="960" /></p>
 
 
       </div>

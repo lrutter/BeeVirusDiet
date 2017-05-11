@@ -18,16 +18,20 @@ ui <- shinyUI(fluidPage(
   plotlyOutput("boxPlot")
 ))
 
+bindata <- readRDS("beeDataFN.rds")
+bindata[,2:ncol(bindata)] <- log(bindata[,2:ncol(bindata)])
+# Log will cause negative values, so set them to zero
+bindata[,2:ncol(bindata)] <- apply(bindata[,2:ncol(bindata)], 2, function(x) ifelse(x < 0, 0, x))
+
+#set.seed(1)
+#bindata <- data.frame(ID = paste0("ID",1:100), A.1=abs(rnorm(100)), A.2=abs(rnorm(100)), A.3=abs(rnorm(100)), B.1=abs(rnorm(100)), B.2=abs(rnorm(100)), C.1=abs(rnorm(100)), C.2=abs(rnorm(100)))
+bindata$ID <- as.character(bindata$ID)
+colNames <- colnames(bindata)
+myPairs <- unique(sapply(colNames, function(x) unlist(strsplit(x,"[.]"))[1]))
+myPairs <- myPairs[-which(myPairs=="ID")]
+colGroups <- sapply(colNames, function(x) unlist(strsplit(x,"[.]"))[1])
+
 server <- shinyServer(function(input, output) {
-  
-  bindata <- readRDS("beeDataFN.rds")
-  #set.seed(1)
-  #bindata <- data.frame(ID = paste0("ID",1:100), A.1=abs(rnorm(100)), A.2=abs(rnorm(100)), A.3=abs(rnorm(100)), B.1=abs(rnorm(100)), B.2=abs(rnorm(100)), C.1=abs(rnorm(100)), C.2=abs(rnorm(100)))
-  bindata$ID <- as.character(bindata$ID)
-  colNames <- colnames(bindata)
-  myPairs <- unique(sapply(colNames, function(x) unlist(strsplit(x,"[.]"))[1]))
-  myPairs <- myPairs[-which(myPairs=="ID")]
-  colGroups <- sapply(colNames, function(x) unlist(strsplit(x,"[.]"))[1])
   
   output$selInput <- renderUI({
     checkboxGroupInput("selPair", "Choose groups:", myPairs, inline = TRUE)

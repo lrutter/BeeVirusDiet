@@ -34,16 +34,23 @@ colnames(beeCounts) <- c("NC.1", "NC.2", "NR.1", "VR.1", "NS.1", "VP.1", "NS.2",
 
 beeCounts <- beeCounts[ , order(names(beeCounts))]
 
+laneInfo <- c("L12","L12","L12","L12","L34","L34","L12","L12","L12","L12","L34","L34","L12","L12","L34","L34","L34","L34","L12","L12","L34","L34","L34","L34","L12","L12","L12","L12","L34","L34","L12","L12","L12","L12","L34","L34","L12","L12","L34","L34","L34","L34","L12","L12","L34","L34","L34","L34")
+
 y <- DGEList(counts=beeCounts)
 ```
 
 ```{r}
 libSizeB4 <- y[[2]]
 libSizeB4$group <- unlist(lapply(rownames(libSizeB4), function(x) unlist(strsplit(x,"\\."))[1]))
+libSizeB4$laneInfo <- laneInfo
+
+ggplot(libSizeB4, aes(x=rownames(libSizeB4), y=lib.size, fill=laneInfo, las=3)) + geom_bar(position=position_dodge(), stat="identity", colour="black", size=.3) + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + labs(x = "Sample", y = "Library size")# Use thin black outlines
 
 ggplot(libSizeB4, aes(x=rownames(libSizeB4), y=lib.size, fill=group, las=3)) + geom_bar(position=position_dodge(), stat="identity", colour="black", size=.3) + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + labs(x = "Sample", y = "Library size")# Use thin black outlines
 
 libSizeB4 <- libSizeB4[with(libSizeB4, order(lib.size)), ]
+
+ggplot(libSizeB4, aes(x=as.factor(lib.size), y=lib.size, fill=laneInfo)) + geom_bar(position=position_dodge(), stat="identity", colour="black", size=.3) + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + labs(x = "Sample", y = "Library size") + scale_x_discrete(labels=row.names(libSizeB4))
 
 ggplot(libSizeB4, aes(x=as.factor(lib.size), y=lib.size, fill=group)) + geom_bar(position=position_dodge(), stat="identity", colour="black", size=.3) + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + labs(x = "Sample", y = "Library size") + scale_x_discrete(labels=row.names(libSizeB4))
 
