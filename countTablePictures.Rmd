@@ -112,15 +112,15 @@ ggparcoord(data.frame(yERN[[1]]), columns=1:48, alphaLines=0, boxplot=TRUE, scal
 
 allGroups <- c(rep("NC",6), rep("NN",6), rep("NP",6), rep("NR",6), rep("VC",6), rep("VN",6), rep("VP",6), rep("VR",6))
 yERN$samples$group <- allGroups
-plotMDS(y, col = c("red","deeppink","darkorange","gold","green2", "green4","blue", "purple")[factor(allGroups)], cex=0.6)
+plotMDS(y, col = c("red","deeppink","darkorange","gold","green2", "green4","blue", "purple")[factor(allGroups)], cex=0.6, xlim=c(-1.9, 1.9), ylim=c(-1.9, 1.9))
 
-plotMDS(y, col = c("blue","blue","blue","blue","red","red","red","red")[factor(allGroups)], cex=0.6)
+plotMDS(y, col = c("blue","blue","blue","blue","red","red","red","red")[factor(allGroups)], cex=0.6, xlim=c(-1.9, 1.9), ylim=c(-1.9, 1.9))
 
-plotMDS(y, col = c("white","red","blue","white","white","white","white","white")[factor(allGroups)], cex=0.6)
+plotMDS(y, col = c("white","red","blue","white","white","white","white","white")[factor(allGroups)], cex=0.6, xlim=c(-1.9, 1.9), ylim=c(-1.9, 1.9))
 
-plotMDS(y, col = c("white","white","white","white","white","red","blue","white")[factor(allGroups)], cex=0.6)
+plotMDS(y, col = c("white","white","white","white","white","red","blue","white")[factor(allGroups)], cex=0.6, xlim=c(-1.9, 1.9), ylim=c(-1.9, 1.9))
 
-plotMDS(y, col = c("white","white","blue","white","white","red","white","white")[factor(allGroups)], cex=0.6)
+plotMDS(y, col = c("white","white","blue","white","white","red","white","white")[factor(allGroups)], cex=0.6, xlim=c(-1.9, 1.9), ylim=c(-1.9, 1.9))
 ```
 
 ```{r}
@@ -132,15 +132,15 @@ yCPM <- y
 yCPM[[1]] <- cpm(y, TRUE, TRUE)
 
 yCPM$samples$group <- allGroups
-plotMDS(yCPM, col = c("red","deeppink","darkorange","gold","green2", "green4","blue", "purple")[factor(allGroups)], cex=0.6)
+plotMDS(yCPM, col = c("red","deeppink","darkorange","gold","green2", "green4","blue", "purple")[factor(allGroups)], cex=0.6, xlim=c(-1.9, 1.9), ylim=c(-1.9, 1.9))
 
-plotMDS(yCPM, col = c("blue","blue","blue","blue","red","red","red","red")[factor(allGroups)], cex=0.6)
+plotMDS(yCPM, col = c("blue","blue","blue","blue","red","red","red","red")[factor(allGroups)], cex=0.6, xlim=c(-1.9, 1.9), ylim=c(-1.9, 1.9))
 
-plotMDS(yCPM, col = c("white","red","blue","white","white","white","white","white")[factor(allGroups)], cex=0.6)
+plotMDS(yCPM, col = c("white","red","blue","white","white","white","white","white")[factor(allGroups)], cex=0.6, xlim=c(-1.9, 1.9), ylim=c(-1.9, 1.9))
 
-plotMDS(yCPM, col = c("white","white","white","white","white","red","blue","white")[factor(allGroups)], cex=0.6)
+plotMDS(yCPM, col = c("white","white","white","white","white","red","blue","white")[factor(allGroups)], cex=0.6, xlim=c(-1.9, 1.9), ylim=c(-1.9, 1.9))
 
-plotMDS(yCPM, col = c("white","white","blue","white","white","red","white","white")[factor(allGroups)], cex=0.6)
+plotMDS(yCPM, col = c("white","white","blue","white","white","red","white","white")[factor(allGroups)], cex=0.6, xlim=c(-1.9, 1.9), ylim=c(-1.9, 1.9))
 ```
 
 ```{r}
@@ -152,15 +152,15 @@ yCPMN[[1]] <- betweenLaneNormalization(yCPM[[1]], which="full", round=FALSE) #fr
 ggparcoord(data.frame(yCPMN[[1]]), columns=1:48, alphaLines=0, boxplot=TRUE, scale="globalminmax") + coord_flip()
 
 yCPMN$samples$group <- allGroups
-plotMDS(yCPMN, col = c("red","deeppink","darkorange","gold","green2", "green4","blue", "purple")[factor(allGroups)], cex=0.6)
+plotMDS(yCPMN, col = c("red","deeppink","darkorange","gold","green2", "green4","blue", "purple")[factor(allGroups)], cex=0.6, xlim=c(-1.9, 1.9), ylim=c(-1.9, 1.9))
 
-plotMDS(yCPMN, col = c("blue","blue","blue","blue","red","red","red","red")[factor(allGroups)], cex=0.6)
+plotMDS(yCPMN, col = c("blue","blue","blue","blue","red","red","red","red")[factor(allGroups)], cex=0.6, xlim=c(-1.9, 1.9), ylim=c(-1.9, 1.9))
 
-plotMDS(yCPMN, col = c("white","red","blue","white","white","white","white","white")[factor(allGroups)], cex=0.6)
+plotMDS(yCPMN, col = c("white","red","blue","white","white","white","white","white")[factor(allGroups)], cex=0.6, xlim=c(-1.9, 1.9), ylim=c(-1.9, 1.9))
 
-plotMDS(yCPMN, col = c("white","white","white","white","white","red","blue","white")[factor(allGroups)], cex=0.6)
+plotMDS(yCPMN, col = c("white","white","white","white","white","red","blue","white")[factor(allGroups)], cex=0.6, xlim=c(-1.9, 1.9), ylim=c(-1.9, 1.9))
 
-plotMDS(yCPMN, col = c("white","white","blue","white","white","red","white","white")[factor(allGroups)], cex=0.6)
+plotMDS(yCPMN, col = c("white","white","blue","white","white","red","white","white")[factor(allGroups)], cex=0.6, xlim=c(-1.9, 1.9), ylim=c(-1.9, 1.9))
 ```
 
 ```{r}
@@ -196,13 +196,13 @@ yMutateQ1 = DGEList(counts=yMutateQ1)
 yMutateQ1 <- calcNormFactors(yMutateQ1)
 
 yMutateQ1$samples$group <- allGroups
-plotMDS(yMutateQ1, col = c("red","deeppink","darkorange","gold","green2", "green4","blue", "purple")[factor(allGroups)], cex=0.6)
+plotMDS(yMutateQ1, col = c("red","deeppink","darkorange","gold","green2", "green4","blue", "purple")[factor(allGroups)], cex=0.6, xlim=c(-1.9, 1.9), ylim=c(-1.9, 1.9))
 
-plotMDS(yMutateQ1, col = c("blue","blue","blue","blue","red","red","red","red")[factor(allGroups)], cex=0.6)
+plotMDS(yMutateQ1, col = c("blue","blue","blue","blue","red","red","red","red")[factor(allGroups)], cex=0.6, xlim=c(-1.9, 1.9), ylim=c(-1.9, 1.9))
 
-plotMDS(yMutateQ1, col = c("white","red","blue","white","white","white","white","white")[factor(allGroups)], cex=0.6)
+plotMDS(yMutateQ1, col = c("white","red","blue","white","white","white","white","white")[factor(allGroups)], cex=0.6, xlim=c(-1.9, 1.9), ylim=c(-1.9, 1.9))
 
-plotMDS(yMutateQ1, col = c("white","white","white","white","white","red","blue","white")[factor(allGroups)], cex=0.6)
+plotMDS(yMutateQ1, col = c("white","white","white","white","white","red","blue","white")[factor(allGroups)], cex=0.6, xlim=c(-1.9, 1.9), ylim=c(-1.9, 1.9))
 
-plotMDS(yMutateQ1, col = c("white","white","blue","white","white","red","white","white")[factor(allGroups)], cex=0.6)
+plotMDS(yMutateQ1, col = c("white","white","blue","white","white","red","white","white")[factor(allGroups)], cex=0.6, xlim=c(-1.9, 1.9), ylim=c(-1.9, 1.9))
 ```
