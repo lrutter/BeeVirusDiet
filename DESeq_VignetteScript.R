@@ -56,3 +56,54 @@ plotMA(res, ylim = c(-1, 1))
 plotDispEsts(dds, ylim = c(1e-6, 1e1))
 hist(res$pvalue, breaks=20, col="grey")
 
+
+# create bins using the quantile function
+qs <- c( 0, quantile( res$baseMean[res$baseMean > 0], 0:7/7 ) )
+# "cut" the genes into the bins
+bins <- cut( res$baseMean, qs )
+# rename the levels of the bins using the middle point
+levels(bins) <- paste0("~",round(.5*qs[-1] + .5*qs[-length(qs)]))
+# calculate the ratio of £p£ values less than .01 for each bin
+ratios <- tapply( res$pvalue, bins, function(p) mean( p < .01, na.rm=TRUE ) ) # plot these ratios
+barplot(ratios, xlab="mean normalized count", ylab="ratio of small $p$ values")
+
+# Independent filtering (Removal of low-count genes) can result in more p-values. This function tells us the number of rejections for various mean normalized count cut-offs.
+attr(res,"filterThreshold")
+
+# Performing rlog transformation for exploratory analysis (visualization)
+rld <- rlog(dds)
+head(assay(rld))
+
+# Compare first two samples. With rlog on right, there is no longer excessive variation in low read counts, like there was in ordinary logarithm on left.
+par(mfrow = c(1, 2))
+plot(log2(1+counts(dds, normalized=TRUE)[, 1:2]), col="#00000020", pch=20, cex=0.3)
+plot(assay(rld)[, 1:2], col="#00000020", pch=20, cex=0.3)
+
+# Examine distance btwn samples and see if it fits experimental design
+sampleDists <- dist(t(assay(rld)))
+sampleDists
+
+sampleDistMatrix <- as.matrix( sampleDists )
+rownames(sampleDistMatrix) <- paste(rld$treatment, rld$patient, sep="-")
+colnames(sampleDistMatrix) <- NULL
+library("gplots")
+library("RColorBrewer")
+colours = colorRampPalette(rev(brewer.pal(9, "Blues")))(255)
+heatmap.2(sampleDistMatrix, trace="none", col=colours)
+
+# Another way to visualize sample-to-sample distances is a principal-components analysis (PCA)
+ramp <- 1:3/3
+cols <- c(rgb(ramp, 0, 0),
+          rgb(0, ramp, 0),
+          rgb(0, 0, ramp),
+          rgb(ramp, 0, ramp))
+print(plotPCA(rld, intgroup = c("patient", "treatment"), col=cols))
+
+# We can also do hiearchical clustering of genes (instead of samples). We usually only do this for the most variable genes. Here, we choose the 35 genes with the most variance across samples.
+topVarGenes <- head( order( rowVars( assay(rld) ), decreasing=TRUE ), 35 )
+heatmap.2( assay(rld)[ topVarGenes, ], scale="row",
+           trace="none", dendrogram="column",
+           col = colorRampPalette( rev(brewer.pal(9, "RdBu")) )(255))
+
+
+
