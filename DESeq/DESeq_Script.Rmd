@@ -22,31 +22,57 @@ knitr::opts_chunk$set(
 ```
 
 ```{r}
-library(edgeR)
-library(ggplot2)
-library(GGally)
-library(EDASeq)
-library(utils)
+library(DESeq2)
 
-thisPath <- "/Users/lindz/BeeVirusDiet/edgeR"
+thisPath <- "/Users/lindz/BeeVirusDiet/DESeq"
 
 beeCounts <-read.delim(file="../AllLaneCount.txt",row.names=1,stringsAsFactors = FALSE)
-
 colnames(beeCounts) <- c("NC.1", "NC.2", "NR.1", "VR.1", "NS.1", "VP.1", "NS.2", "VR.2", "NP.1", "VP.2", "VC.1", "NP.2", "VP.3", "NP.3", "VS.1", "VS.2", "VC.2", "NC.3", "VP.4", "NC.4", "NR.2", "VC.3", "VC.4", "NP.4", "VR.3", "NC.5", "VS.3", "NP.5", "VC.5", "VS.4", "NS.3", "VS.5", "VP.5", "NR.3", "NR.4", "VC.6", "NS.4", "NC.6", "NP.6", "VR.4", "NR.5", "NR.6", "NS.5", "VP.6", "NS.6", "VR.5", "VR.6", "VS.6")
+countdata <- beeCounts[ , order(names(beeCounts))]
+countdata <- as.matrix(countdata)
 
-beeCounts <- beeCounts[ , order(names(beeCounts))]
+coldata = data.frame(row.names = colnames(countdata), virus = unlist(lapply(colnames(countdata), function (x) substring(unlist(strsplit(x, "[.]"))[1],1,1))), diet = unlist(lapply(colnames(countdata), function (x) substring(unlist(strsplit(x, "[.]"))[1],2,2))), treatment = unlist(lapply(colnames(countdata), function (x) unlist(strsplit(x, "[.]"))[1])))
 
-y <- DGEList(counts=beeCounts)
+# Not sure which to do
+#dds = DESeqDataSetFromMatrix(countData = countdata, colData = coldata, design = ~ virus + diet + virus:diet)
+#dds = DESeqDataSetFromMatrix(countData = countdata, colData = coldata, design = ~ virus + diet + virus:diet)
+dds = DESeqDataSetFromMatrix(countData = countdata, colData = coldata, design = ~ treatment)
+dds <- DESeq(dds)
+res <- results(dds, contrast=c("treatment","NC","NP"))
 ```
 
-edgeR vignette states that a gene is required to have a count of 5-10 in a library to be considered expressed in that library. Here minLib is equal to `r min(y$samples$lib.size)`. A CPM of 3 corresponds to a count of ~9 in the minimum number of samples in a group (24). So, I keep only rows that have that. This reduces the number of genes from 15,314 to 8,581.
+We can examine pairwise combinations of all samples
 
 ```{r}
-minLib <- min(y$samples$lib.size)
-keep <- rowSums(cpm(y)>3) >= 24
-# Number of genes 15,314--> 8,581
-y <- y[keep, , keep.lib.sizes=FALSE]
+uTreat <- unique(unlist(lapply(colnames(countdata), function (x) unlist(strsplit(x, "[.]"))[1])))
+
+res <- results(dds, contrast=c("treatment","NC","NP"))
+
+
+
+
+allPairs = data.frame(Treatment1 = factor(), Treatment2 = factor(), NumberDEG = numeric())
+
+for (i in 1:(length(uTreat)-1)){
+  for (j in (i+1):length(uTreat)){
+    res <- results(dds, contrast=c("treatment",uTreat[i],uTreat[j]))
+    #saveRDS(res, file=paste0(thisPath, "/DEGPairs/", colnames(fit)[i], colnames(fit)[j],".Rds"))
+    degLength <- length(which((res@listData)$padj <0.05))
+    allPairs = rbind(allPairs, data.frame(Treatment1 = uTreat[i], Treatment2 = uTreat[j], NumberDEG = degLength))
+  }
+}
+allPairs <- allPairs[order(allPairs$NumberDEG),]
+
+
+
 ```
+
+
+
+
+
+
+
 
 Next, I used edgeR normalization.
 ```{r}
