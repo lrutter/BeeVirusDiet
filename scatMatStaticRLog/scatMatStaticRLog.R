@@ -10,7 +10,7 @@ library(dplyr)
 library(data.table)
 library(ggplot2)
 
-outDir = "/Users/lindz/BeeVirusDiet/scatMatStatic"
+outDir = "/Users/lindz/BeeVirusDiet/scatMatStaticRLog"
 
 my_fn <- function(data, mapping, ...){
   x = data[,c(as.character(mapping$x))]
