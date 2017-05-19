@@ -10,9 +10,5 @@ dat <- as.data.frame(assay(rld))
 setDT(dat, keep.rownames = TRUE)[]
 colnames(dat)[1] <- "ID"
 dat$ID <- as.character(dat$ID)
-colNames <- colnames(dat)
-myPairs <- unique(sapply(colNames, function(x) unlist(strsplit(x,"[.]"))[1]))
-myPairs <- myPairs[-which(myPairs=="ID")]
-colGroups <- sapply(colNames, function(x) unlist(strsplit(x,"[.]"))[1])
 dat <- as.data.frame(dat)
 saveRDS(dat, "beeDataRLog.rds")
