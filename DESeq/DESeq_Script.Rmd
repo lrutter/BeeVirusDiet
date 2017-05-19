@@ -46,11 +46,6 @@ We can examine pairwise combinations of all samples
 ```{r}
 uTreat <- unique(unlist(lapply(colnames(countdata), function (x) unlist(strsplit(x, "[.]"))[1])))
 
-res <- results(dds, contrast=c("treatment","NC","NP"))
-
-
-
-
 allPairs = data.frame(Treatment1 = factor(), Treatment2 = factor(), NumberDEG = numeric())
 
 for (i in 1:(length(uTreat)-1)){
@@ -62,129 +57,67 @@ for (i in 1:(length(uTreat)-1)){
   }
 }
 allPairs <- allPairs[order(allPairs$NumberDEG),]
-
-
-
-```
-
-
-
-
-
-
-
-
-Next, I used edgeR normalization.
-```{r}
-y <- calcNormFactors(y)
-```
-
-I can create boxplot and RLE boxplot.
-
-```{r}
-ggparcoord(data.frame(y[[1]]), columns=1:48, alphaLines=0, boxplot=TRUE, scale="globalminmax") + coord_flip()
-
-ggparcoord(data.frame(log(y[[1]]/colMeans(y[[1]]))), columns=1:48, alphaLines=0, boxplot=TRUE, scale="globalminmax") + coord_flip()
-```
-
-I can create MDS plots of interest.
-
-```{r}
-allGroups <- c(rep("NC",6), rep("NP",6), rep("NR",6), rep("NS",6), rep("VC",6), rep("VP",6), rep("VR",6), rep("VS",6))
-y$samples$group <- allGroups
-
-plotMDS(y, col = c("red","deeppink","darkorange","gold","green2", "green4","blue", "purple")[factor(allGroups)], cex=0.6)
-
-plotMDS(y, col = c("blue","blue","blue","blue","red","red","red","red")[factor(allGroups)], cex=0.6)
-
-plotMDS(y, col = c("white","blue","white","red","white","white","white","white")[factor(allGroups)], cex=0.6)
-
-plotMDS(y, col = c("white","white","white","white","white","blue","white","red")[factor(allGroups)], cex=0.6)
-
-plotMDS(y, col = c("white","blue","white","white","white","white","white","red")[factor(allGroups)], cex=0.6)
-```
-
-Copying Section (3.3.1 in edgeR vignette)
-
-```{r}
-Group = factor(c(rep("NC",6), rep("NP",6), rep("NR",6), rep("NS",6), rep("VC",6), rep("VP",6), rep("VR",6), rep("VS",6)))
-targets <- data.frame(rownames=paste0("Sample",1:48), Virus = c(rep("N",24), rep("V",24)), Diet = c(rep("C",6), rep("P",6), rep("R",6), rep("S",6), rep("C",6), rep("P",6), rep("R",6), rep("S",6)), 
-Group = Group)
-design <- model.matrix(~0+Group, data=y$samples)
-colnames(design) <- levels(Group)
-y <- estimateDisp(y, design)
-plotBCV(y)
-```
-
-```{r}
-fit <- glmFit(y, design)
-
-myContrasts <- makeContrasts(
-  VvsN = (VC+VS+VP+VR)-(NC+NS+NP+NR),
-  NSvsNP = NS-NP,
-  VSvsVP = VS-VP,
-  NPvsVS = NP-VS,
-  NSNPvVSVP = (NS-NP)-(VS-VP),
-levels=design)
-```
-
-Contained 188 DEGs
-```{r}
-VvsN_DEG <- glmLRT(fit, contrast=myContrasts[,"VvsN"])
-VvsN_DEG  <- topTags(VvsN_DEG, n = nrow(y[[1]]))[[1]]
-VvsN_DEG <- VvsN_DEG[which(VvsN_DEG$FDR<0.05),]
-```
-
-Contained 2,464 DEGs
-```{r}
-NSvsNP_DEG <- glmLRT(fit, contrast=myContrasts[,"NSvsNP"])
-NSvsNP_DEG  <- topTags(NSvsNP_DEG, n = nrow(y[[1]]))[[1]]
-NSvsNP_DEG <- NSvsNP_DEG[which(NSvsNP_DEG$FDR<0.05),]
-```
-
-Contained 23 DEGs
-```{r}
-VSvsVP_DEG <- glmLRT(fit, contrast=myContrasts[,"VSvsVP"])
-VSvsVP_DEG  <- topTags(VSvsVP_DEG, n = nrow(y[[1]]))[[1]]
-VSvsVP_DEG <- NSvsNP_DEG[which(VSvsVP_DEG$FDR<0.05),]
-```
-
-Contained 2,144 DEGs
-```{r}
-NPvsVS_DEG <- glmLRT(fit, contrast=myContrasts[,"NPvsVS"])
-NPvsVS_DEG  <- topTags(NPvsVS_DEG, n = nrow(y[[1]]))[[1]]
-NPvsVS_DEG <- NSvsNP_DEG[which(NPvsVS_DEG$FDR<0.05),]
-```
-
-Contained 0 DEGs
-```{r}
-NSNPvVSVP_DEG <- glmLRT(fit, contrast=myContrasts[,"NSNPvVSVP"])
-NSNPvVSVP_DEG  <- topTags(NSNPvVSVP_DEG, n = nrow(y[[1]]))[[1]]
-NSNPvVSVP_DEG <- NSNPvVSVP_DEG[which(NSNPvVSVP_DEG$FDR<0.05),]
-```
-
-Below we save the DEGs from all pairwise combinations of treatment groups.
-
-```{r}
-allPairs = data.frame(Treatment1 = factor(), Treatment2 = factor(), NumberDEG = numeric())
-
-for (i in 1:(ncol(fit)-1)){
-  for (j in (i+1):ncol(fit)){
-    contrast=rep(0,ncol(fit))
-    contrast[i]=1
-    contrast[j]=-1
-    lrt <- glmLRT(fit, contrast=contrast)
-    lrt <- topTags(lrt, n = nrow(y[[1]]))[[1]]
-    lrt <- lrt[which(lrt$FDR<0.05),]
-    saveRDS(lrt, file=paste0(thisPath, "/DEGPairs/", colnames(fit)[i], colnames(fit)[j],".Rds"))
-    lrtLength <- nrow(lrt)
-    allPairs = rbind(allPairs, data.frame(Treatment1 = factor(colnames(fit)[i]), Treatment2 = factor(colnames(fit)[j]), NumberDEG = lrtLength))
-  }
-}
-allPairs <- allPairs[order(allPairs$NumberDEG),]
-saveRDS(allPairs, file=paste0(thisPath, "/DEGPairs/allPairs.Rds"))
-```
-
-```{r}
 allPairs
+```
+
+```{r}
+plotMA(res, ylim = c(-1, 1000000), xlim=c(-1, 200000))
+```
+
+```{r}
+plotDispEsts(dds, ylim = c(1e-6, 1e1))
+```
+
+The histogram of p-values does not look too good. 
+
+```{r}
+hist( res$pvalue, breaks=20, col="grey" )
+```
+
+Below has y-axis that doesn't add to 1 for some reason (neither does the example in the vignette)
+
+```{r}
+# create bins using the quantile function
+qs <- c( 0, quantile( res$baseMean[res$baseMean > 0], 0:7/7 ) )
+# "cut" the genes into the bins
+bins <- cut( res$baseMean, qs )
+# rename the levels of the bins using the middle point
+levels(bins) <- paste0("~",round(.5*qs[-1] + .5*qs[-length(qs)]))
+# calculate the ratio of £p£ values less than .01 for each bin
+ratios <- tapply( res$pvalue, bins, function(p) mean( p < .01, na.rm=TRUE ) ) # plot these ratios
+barplot(ratios, xlab="mean normalized count", ylab="ratio of small $p$ values")
+```
+
+Taking rlog transformation for EDA.
+
+```{r}
+rld <- rlog(dds)
+par( mfrow = c(1, 2))
+plot(log2(1+counts(dds, normalized=TRUE)[, 1:2] ), col="#00000020", pch=20, cex=0.3)
+plot(assay(rld)[, c(2,3)], col="#00000020", pch=20, cex=0.3)
+```
+
+```{r}
+sampleDists <- dist( t( assay(rld) ) )
+sampleDists
+```
+
+```{r}
+sampleDistMatrix <- as.matrix(sampleDists)
+rownames(sampleDistMatrix) <- paste(rld$treatment, rld$patient, sep="-")
+colnames(sampleDistMatrix) <- NULL
+library("gplots")
+library("RColorBrewer")
+colours = colorRampPalette(rev(brewer.pal(9, "Blues")))(255)
+heatmap.2(sampleDistMatrix, trace="none", col=colours)
+```
+
+
+```{r}
+print(plotPCA(rld, intgroup="treatment") )
+```
+
+```{r}
+#topVarGenes <- head( order( rowVars( assay(rld) ), decreasing=TRUE ), 35 )
+#heatmap.2( assay(rld)[ topVarGenes, ], scale="row", trace="none", dendrogram="column", col = colorRampPalette( rev(brewer.pal(9, "RdBu")) )(255))
 ```
