@@ -10,7 +10,7 @@ library(dplyr)
 library(data.table)
 library(ggplot2)
 
-outDir = "/Users/lindz/BeeVirusDiet/scatMatStatic"
+outDir = "/Users/lindz/BeeVirusDiet/scatMatStaticLog2"
 
 my_fn <- function(data, mapping, ...){
   x = data[,c(as.character(mapping$x))]
@@ -23,7 +23,7 @@ my_fn <- function(data, mapping, ...){
 }
 
 bindata <- readRDS("beeDataFN.rds")
-bindata[,2:ncol(bindata)] <- log(bindata[,2:ncol(bindata)])
+bindata[,2:ncol(bindata)] <- log2(bindata[,2:ncol(bindata)]+1)
 # Log will cause negative values, so set them to zero
 bindata[,2:ncol(bindata)] <- apply(bindata[,2:ncol(bindata)], 2, function(x) ifelse(x < 0, 0, x))
 bindata$ID <- as.character(bindata$ID)

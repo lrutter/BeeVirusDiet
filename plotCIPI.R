@@ -1,0 +1,26 @@
+library(ggplot2) 
+
+dat <- data.frame(qsec=mtcars$qsec, wt=mtcars$wt)
+m <- lm(wt ~ qsec, data = dat) 
+mpi <- cbind(dat, predict(m, interval = "prediction"))
+# Keep only points that are outside the prediction interval
+plotPoints <- mpi[which(!(mpi$wt > mpi$lwr & mpi$wt < mpi$upr)),]
+
+# Create prediction interval upper and lower lines
+newx <- seq(min(mpi$qsec), max(mpi$qsec), by=0.05)
+pred_interval <- predict(m, newdata=data.frame(qsec=newx), interval="prediction", level = 0.95)
+pred_interval <- as.data.frame(pred_interval)
+
+# Below are three different attempts to plot the prediction upper and lower lines as ribbons and the points outside the prediction interval as points
+
+# Object 'qsec' not found
+ggplot(data=plotPoints, aes(x = qsec, y = wt)) + geom_point() + 
+  geom_ribbon(data=pred_interval, aes(ymin = lwr, ymax = upr), fill = "blue", alpha = 0.2) 
+
+# Object 'wt' not found
+ggplot(data=plotPoints, aes(x = qsec)) + geom_point(y = wt) + 
+  geom_ribbon(data=pred_interval, aes(ymin = lwr, ymax = upr), fill = "blue", alpha = 0.2) 
+
+# geom_ribbon requires the following missing aesthetics: x
+ggplot(data=plotPoints) + geom_point(aes(x = qsec, y=wt)) + 
+  geom_ribbon(data=pred_interval, aes(ymin = lwr, ymax = upr), fill = "blue", alpha = 0.2) 
