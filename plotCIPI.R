@@ -12,5 +12,5 @@ pred_interval <- predict(m, newdata=data.frame(qsec=newx), interval="prediction"
 pred_interval <- as.data.frame(pred_interval)
 
 pred_interval$qsec = newx
-ggplot(data=plotPoints, aes(x = qsec, y = wt)) + geom_point() + 
+ggplot(data=plotPoints, aes(x = qsec)) + geom_point(aes(y=wt)) + 
   geom_ribbon(data=pred_interval, aes(ymin = lwr, ymax = upr), fill = "blue", alpha = 0.2) 
