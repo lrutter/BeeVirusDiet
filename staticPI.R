@@ -19,7 +19,7 @@ ggpairs(dat[,c(2,3)], lower = list(continuous = my_fn))
 nCol = ncol(dat)
 
 
-attach(faithful) 
+attach(faithful)
 eruption.lm = lm(eruptions ~ waiting) 
 newdata = data.frame(waiting=80)
 predict(eruption.lm, newdata, interval="predict")
