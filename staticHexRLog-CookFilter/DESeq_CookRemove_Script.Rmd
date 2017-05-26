@@ -23,6 +23,10 @@ knitr::opts_chunk$set(
 
 ```{r}
 library(DESeq2)
+library(data.table)
+library(GGally)
+library(hexbin)
+library(ggplot2)
 
 thisPath <- "/Users/lindz/BeeVirusDiet/DESeq"
 
@@ -94,24 +98,23 @@ my_fn <- function(data, mapping, ...){
   p
 }
 
-
+rld <- rlog(dds)
 
 ```
 
 ```{r}
 uTreat <- unique(unlist(lapply(colnames(countdata), function (x) unlist(strsplit(x, "[.]"))[1])))
-
 allPairs = data.frame(Treatment1 = factor(), Treatment2 = factor(), NumberDEG = numeric())
 
 for (i in 1:(length(uTreat)-1)){
   for (j in (i+1):length(uTreat)){
-    res <- results(dds, contrast=c("treatment",uTreat[i],uTreat[j]))
-    numKeep <- length(which(!is.na(res@listData$padj)))
+    group1 = uTreat[i]
+    group2 = uTreat[j]
     
-    rld <- rlog(dds)
-
-
+    res <- results(dds, contrast=c("treatment",group1,group2))
+    numKeep <- length(which(!is.na(res@listData$padj)))
     bindata <- as.data.frame(assay(rld))
+    bindata <- bindata[which(!is.na(res@listData$padj)),]
     setDT(bindata, keep.rownames = TRUE)[]
     colnames(bindata)[1] <- "ID"
     bindata$ID <- as.character(bindata$ID)
@@ -121,6 +124,16 @@ for (i in 1:(length(uTreat)-1)){
     colGroups <- sapply(colNames, function(x) unlist(strsplit(x,"[.]"))[1])
     bindata <- as.data.frame(bindata)
     
+    bindataSel <- cbind(ID=bindata$ID, bindata[,which(colGroups %in% c(group1, group2))])
+    maxVal = max(bindataSel[,-1])
+    minVal = min(bindataSel[,-1])
+    maxRange = c(minVal, maxVal)
+    xbins=10
+    buffer = maxRange[2]/xbins
+    p <- ggpairs(bindataSel[,-1], lower = list(continuous = my_fn))
+    jpeg(filename=paste0(outDir, "/", group1, "_", group2, ".jpg"), height=700, width=700)
+    print(p)
+    dev.off()
     
     allPairs = rbind(allPairs, data.frame(Treatment1 = uTreat[i], Treatment2 = uTreat[j], NumberNA = numKeep))
   }
