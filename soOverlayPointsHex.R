@@ -17,5 +17,5 @@ h <- hexbin(x=x, y=y, xbins=xbins, shape=1, IDs=TRUE, xbnds=maxRange, ybnds=maxR
 hexdf <- data.frame (hcell2xy (h),  hexID = h@cell, counts = h@count)
 attr(hexdf, "cID") <- h@cID
 
-ggplot(hexdf, aes(x=x, y=y, fill = counts, hexID=hexID)) + geom_hex(stat="identity") + geom_abline(intercept = 0, color = "red", size = 0.25) + coord_cartesian(xlim = c(maxRange[1], maxRange[2]), ylim = c(maxRange[1], maxRange[2])) + geom_point(data = points, aes(x=Group1, y=Group2), inherit.aes = FALSE)
+ggplot(hexdf, aes(x=x, y=y, fill = counts, hexID=hexID)) + geom_hex(stat="identity") + geom_abline(intercept = 0, color = "red", size = 0.25) + coord_cartesian(xlim = c(maxRange[1], maxRange[2]), ylim = c(maxRange[1], maxRange[2])) + geom_point(data = points, aes(x=Group1, y=Group2), inherit.aes = FALSE, color = "orange", size = 0.1)
 
