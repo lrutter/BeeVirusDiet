@@ -24,7 +24,7 @@ my_fn <- function(data, mapping, ...){
   attr(hexdf, "cID") <- h@cID
   #p <- ggplot(hexdf, aes(x=x, y=y, fill = counts, hexID=hexID)) + geom_hex(stat="identity") + geom_abline(intercept = 0, color = "red", size = 0.25) + coord_cartesian(xlim = c(-1*buffer, maxRange[2]+buffer), ylim = c(-1*buffer, maxRange[2]+buffer))
   
-  p <- ggplot(hexdf, aes(x=x, y=y, fill = counts, hexID=hexID)) + geom_hex(stat="identity") + geom_abline(intercept = 0, color = "red", size = 0.25) + coord_cartesian(xlim = c(-1*buffer, maxRange[2]+buffer), ylim = c(-1*buffer, maxRange[2]+buffer)) + geom_point(data = degData, aes_string(x=xChar, y=yChar), inherit.aes = FALSE, color = "orange", size = 0.1)
+  p <- ggplot(hexdf, aes(x=x, y=y, fill = counts, hexID=hexID)) + geom_hex(stat="identity") + geom_abline(intercept = 0, color = "red", size = 0.25) + coord_cartesian(xlim = c(-1*buffer, maxRange[2]+buffer), ylim = c(-1*buffer, maxRange[2]+buffer)) + geom_point(data = degData, aes_string(x=xChar, y=yChar), inherit.aes = FALSE, color = "orange", size = 2)
   p
 }
 # geom_point(data = points, aes(x=Group1, y=Group2), inherit.aes = FALSE, color = "orange")
@@ -44,13 +44,19 @@ dds <- DESeqDataSetFromMatrix(countData = countdata, colData = coldata, design =
 dds <- DESeq(dds)
 rld <- rlog(dds)
 
-bindataSel <- as.data.frame(assay(rld))[, c(7:12,43:48)]
+# Change group1 and group2 as needed
+group1 ="VC"
+group2 ="VS"
+
+sampleIndex <- which(sapply(colnames(assay(rld)), function(x) unlist(strsplit(x,"[.]"))[1]) %in% c(group1, group2))
+
+bindataSel <- as.data.frame(assay(rld))[, sampleIndex]
 setDT(bindataSel, keep.rownames = TRUE)[]
 colnames(bindataSel)[1] <- "ID"
 bindataSel$ID <- as.character(bindataSel$ID)
 bindataSel <- as.data.frame(bindataSel)
 
-res <- results(dds, contrast=c("treatment","VS","NP"))
+res <- results(dds, contrast=c("treatment",group1,group2))
 degIndex <- which(res@listData$padj<0.05) 
 degData <- bindataSel[degIndex,]
 
@@ -60,8 +66,7 @@ maxRange = c(minVal, maxVal)
 xbins=10
 buffer = maxRange[2]/xbins
 p <- ggpairs(bindataSel[,-1], lower = list(continuous = my_fn))
-#jpeg(filename=paste0(outDir, "/", group1, "_", group2, ".jpg"), height=700, width=700, title="test")
-jpeg(filename=paste0(outDir, "/NP_VS.jpg"), height=700, width=700, title="test")
+jpeg(filename=paste0(outDir, "/", group1, "_", group2, ".jpg"), height=1400, width=1400)
 print(p)
 dev.off()
 
