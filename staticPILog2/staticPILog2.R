@@ -42,8 +42,8 @@ for (i in 1:(length(myPairs)-1)){
     datSel <- cbind(ID=dat$ID, dat[,which(colGroups %in% c(group1, group2))])
     maxVal = max(abs(datSel[,-1]))
     maxRange = c(0, maxVal)
-    xbins=10
-    buffer = maxRange[2]/xbins
+    #xbins=10
+    #buffer = maxRange[2]/xbins
     p <- ggpairs(datSel[,-1], lower = list(continuous = my_fn))
     jpeg(filename=paste0(outDir, "/", group1, "_", group2, ".jpg"), height=700, width=700)
     print(p)
