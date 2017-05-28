@@ -15,18 +15,23 @@ my_fn <- function(data, mapping, ...){
   yChar = as.character(mapping$y)
   x = data[,c(xChar)]
   y = data[,c(yChar)]
-  m <- lm(y ~ x, data = data) # changed right side to "data" from "dat"
+  m <- lm(y ~ x, data = data)
   mpi <- cbind(data, predict(m, interval = "prediction", level=predLevel))
   # Keep only points that are outside the prediction interval
   plotPoints <- mpi[which(!(mpi[yChar] > mpi$lwr & mpi[yChar] < mpi$upr)),]
   pred_interval <- predict(m, newdata=data.frame(x=newx), interval="prediction", level = predLevel)
   pred_interval <- as.data.frame(pred_interval)
   pred_interval[xChar] = newx
-  p <- ggplot(data = plotPoints, aes_string(x = xChar)) + geom_point(aes_string(y = yChar), size=size) + geom_ribbon(data= pred_interval, aes(ymin = lwr, ymax = upr), fill = "blue", alpha = 0.2) + coord_cartesian(xlim = c(minX, maxX), ylim = c(minX, maxX))
+  
+  indexBoth = which(rownames(plotPoints) %in% rownames(degData))
+  redPoints = plotPoints[indexBoth,]
+  greyPoints = plotPoints[-indexBoth,]
+  bluePoints = degData[-which(rownames(degData) %in% rownames(plotPoints)),]
+  
+  p <- ggplot(data = redPoints, aes_string(x = xChar)) + geom_point(aes_string(y = yChar), size=size, color = "red") + geom_point(data = bluePoints, aes_string(y = yChar), size=size, color = "blue") + geom_point(data = greyPoints, aes_string(y = yChar), size=size, color = "darkgrey") + geom_ribbon(data= pred_interval, aes(ymin = lwr, ymax = upr), fill = "cornflowerblue", alpha = 0.2) + coord_cartesian(xlim = c(minX, maxX), ylim = c(minX, maxX))
   p
 }
 
-p <- ggpairs(bindataSel[,-1], lower = list(continuous = my_fn))
 # Following DESeq2 vignette (using rlog)
 dat <- read.delim(file="../AllLaneCount.txt",row.names=1,stringsAsFactors = FALSE)
 colnames(dat) <- c("NC.1", "NC.2", "NR.1", "VR.1", "NS.1", "VP.1", "NS.2", "VR.2", "NP.1", "VP.2", "VC.1", "NP.2", "VP.3", "NP.3", "VS.1", "VS.2", "VC.2", "NC.3", "VP.4", "NC.4", "NR.2", "VC.3", "VC.4", "NP.4", "VR.3", "NC.5", "VS.3", "NP.5", "VC.5", "VS.4", "NS.3", "VS.5", "VP.5", "NR.3", "NR.4", "VC.6", "NS.4", "NC.6", "NP.6", "VR.4", "NR.5", "NR.6", "NS.5", "VP.6", "NS.6", "VR.5", "VR.6", "VS.6")
@@ -63,8 +68,7 @@ degData <- bindataSel[degIndex,]
 maxVal = max(bindataSel[,-1])
 minVal = min(bindataSel[,-1])
 maxRange = c(minVal, maxVal)
-#xbins=10
-#buffer = maxRange[2]/xbins
+
 p <- ggpairs(bindataSel[,-1], lower = list(continuous = my_fn))
 jpeg(filename=paste0(outDir, "/", group1, "_", group2, ".jpg"), height=1400, width=1400)
 print(p)
