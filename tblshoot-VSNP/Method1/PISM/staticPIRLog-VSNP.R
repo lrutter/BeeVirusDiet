@@ -1,3 +1,5 @@
+# Points that are DEG but not outside PI are plotted blue, points that are DEG and outside PI are plotted red, and points that are not DEG but are outside PI are plotted grey.
+
 library(GGally)
 library(tidyr)
 library(dplyr)
@@ -23,12 +25,13 @@ my_fn <- function(data, mapping, ...){
   pred_interval <- as.data.frame(pred_interval)
   pred_interval[xChar] = newx
   
-  indexBoth = which(rownames(plotPoints) %in% rownames(degData))
+  indexBoth = rownames(plotPoints) %in% rownames(degData)
+  indexBlue = rownames(degData) %in% rownames(plotPoints)
   redPoints = plotPoints[indexBoth,]
-  greyPoints = plotPoints[-indexBoth,]
-  bluePoints = degData[-which(rownames(degData) %in% rownames(plotPoints)),]
+  greyPoints = plotPoints[!indexBoth,] # problem if indexBoth is integer(0)
+  bluePoints = degData[!indexBlue,]
   
-  p <- ggplot(data = redPoints, aes_string(x = xChar)) + geom_point(aes_string(y = yChar), size=size, color = "red") + geom_point(data = bluePoints, aes_string(y = yChar), size=size, color = "blue") + geom_point(data = greyPoints, aes_string(y = yChar), size=size, color = "darkgrey") + geom_ribbon(data= pred_interval, aes(ymin = lwr, ymax = upr), fill = "cornflowerblue", alpha = 0.2) + coord_cartesian(xlim = c(minX, maxX), ylim = c(minX, maxX))
+  p <- ggplot(data = redPoints, aes_string(x = xChar)) + geom_point(aes_string(y = yChar), size=2, color = "red") + geom_point(data = bluePoints, aes_string(y = yChar), size=1, color = "blue") + geom_point(data = greyPoints, aes_string(y = yChar), size=size, color = "darkgrey") + geom_ribbon(data= pred_interval, aes(ymin = lwr, ymax = upr), fill = "cornflowerblue", alpha = 0.2) + coord_cartesian(xlim = c(minX, maxX), ylim = c(minX, maxX))
   p
 }
 
@@ -50,8 +53,8 @@ maxX <- max(lDat[,c(2:(ncol(lDat)-1))])
 newx <- seq(minX - (maxX-minX), maxX + (maxX-minX), by=0.05)
 
 # Change group1 and group2 as needed
-group1 ="VS"
-group2 ="NP"
+group1 ="VP"
+group2 ="VR"
 
 sampleIndex <- which(sapply(colnames(assay(rld)), function(x) unlist(strsplit(x,"[.]"))[1]) %in% c(group1, group2))
 
@@ -70,7 +73,7 @@ minVal = min(bindataSel[,-1])
 maxRange = c(minVal, maxVal)
 
 p <- ggpairs(bindataSel[,-1], lower = list(continuous = my_fn))
-jpeg(filename=paste0(outDir, "/", group1, "_", group2, ".jpg"), height=1400, width=1400)
+jpeg(filename=paste0(outDir, "/", group1, "_", group2, "_level99.jpg"), height=1400, width=1400)
 print(p)
 dev.off()
 
