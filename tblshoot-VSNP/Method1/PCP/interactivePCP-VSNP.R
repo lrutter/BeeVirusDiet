@@ -30,6 +30,8 @@ server <- function(input, output) {
   degIndex <- which(res@listData$padj<0.05) 
   pcpDat <- bindataSel[degIndex,]
   
+  #pcpDat <- pcpDatOrig[,2:13] no help
+  
   nVar = ncol(bindataSel)
   colNms <- colnames(bindataSel[, c(2:nVar)])
 
@@ -60,11 +62,11 @@ server <- function(input, output) {
       var dLength = pcpDat.length
       var vLength = data.nVar
       var cNames = data.colNms
-      for (a=0; a<dLength; a++){
+      for (a=0; a<(dLength); a++){
       xArr = [];
       yArr = [];
-      for (b=0; b<vLength; b++){
-      xArr.push(b)
+      for (b=0; b<(vLength); b++){
+      xArr.push(b+1) // CHANGED from b
       yArr.push(pcpDat[a][cNames[b]]);
       }
       var pcpLine = {
