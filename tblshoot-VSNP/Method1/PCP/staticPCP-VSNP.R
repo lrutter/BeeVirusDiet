@@ -46,14 +46,14 @@ res <- results(dds, contrast=c("treatment",group1,group2))
 degIndex <- which(res@listData$padj<0.05) 
 pcpDat <- bindataSel[degIndex,]
 
+nVar = ncol(bindataSel)
+colNms <- colnames(bindataSel[, c(2:nVar)])
+    
+boxDat <- bindataSel[, c(1:nVar)] %>% gather(key, val, -c(ID))
+colnames(boxDat) <- c("ID", "Sample", "Count")
+pcpDat2 <- pcpDat[, c(1:nVar)] %>% gather(key, val, -c(ID))
+colnames(pcpDat2) <- c("ID", "Sample", "Count")
 
-    nVar = ncol(bindataSel)
-    colNms <- colnames(bindataSel[, c(2:nVar)])
-    
-    boxDat <- bindataSel[, c(1:nVar)] %>% gather(key, val, -c(ID))
-    colnames(boxDat) <- c("ID", "Sample", "Count")
-    
-    BP <- ggplot(boxDat, aes(x = Sample, y = Count)) + geom_boxplot()
-    ggBP <- ggplotly(BP)
-    
+
+ggplot(boxDat, aes(x = Sample, y = Count)) + geom_boxplot() + ggplot(data = pcpDat2, aes(x = Sample, y = Count, group = ID)) + geom_line(size = 0.1, alpha = 0.1)
 
