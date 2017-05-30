@@ -10,3 +10,4 @@ colnames(pcpDat) <- c("ID", "Sample", "Count")
 ggplot(boxDat, aes(x = Sample, y = Count)) + geom_boxplot()
 ggplot(pcpDat, aes(x = Sample, y = Count, group = ID)) + geom_line(size = 0.1)
 
+ggplot(boxDat, aes(x = Sample, y = Count)) + geom_boxplot() + geom_line(data=pcpDat, aes(x = Sample, y = Count, group = ID), size = 0.1)
