@@ -1,24 +1,10 @@
-library(plotly)
-library(GGally)
-library(hexbin)
-library(htmlwidgets)
-library(tidyr)
-library(shiny)
-library(dplyr)
-library(data.table)
+#library(tidyr)
+#library(dplyr)
+#library(data.table)
 library(ggplot2)
 library(DESeq2)
 
-ui <- shinyUI(fluidPage(
-  # uiOutput("selInput"),
-  # actionButton("goButton", "Go!"),
-  # plotlyOutput("scatMatPlot", height = 700),
-  # #verbatimTextOutput("selectedValues"),
-  plotlyOutput("boxPlot")
-))
-
 outDir = "/Users/lindz/BeeVirusDiet/tblshoot-VSNP/Method1/PCP"
-
 
 dat <- read.delim(file="../AllLaneCount.txt",row.names=1,stringsAsFactors = FALSE)
 colnames(dat) <- c("NC.1", "NC.2", "NR.1", "VR.1", "NS.1", "VP.1", "NS.2", "VR.2", "NP.1", "VP.2", "VC.1", "NP.2", "VP.3", "NP.3", "VS.1", "VS.2", "VC.2", "NC.3", "VP.4", "NC.4", "NR.2", "VC.3", "VC.4", "NP.4", "VR.3", "NC.5", "VS.3", "NP.5", "VC.5", "VS.4", "NS.3", "VS.5", "VP.5", "NR.3", "NR.4", "VC.6", "NS.4", "NC.6", "NP.6", "VR.4", "NR.5", "NR.6", "NS.5", "VP.6", "NS.6", "VR.5", "VR.6", "VS.6")
@@ -55,5 +41,6 @@ pcpDat2 <- pcpDat[, c(1:nVar)] %>% gather(key, val, -c(ID))
 colnames(pcpDat2) <- c("ID", "Sample", "Count")
 
 
-ggplot(boxDat, aes(x = Sample, y = Count)) + geom_boxplot() + ggplot(data = pcpDat2, aes(x = Sample, y = Count, group = ID)) + geom_line(size = 0.1, alpha = 0.1)
+#ggplot(boxDat, aes(x = Sample, y = Count)) + geom_boxplot() + ggplot(data = pcpDat2, aes(x = Sample, y = Count, group = ID)) + geom_line(size = 0.1, alpha = 0.1)
 
+ggplot(boxDat, aes(x = Sample, y = Count)) + geom_boxplot() + geom_line(data=pcpDat2, aes(x = Sample, y = Count, group = ID), size = 0.1)
