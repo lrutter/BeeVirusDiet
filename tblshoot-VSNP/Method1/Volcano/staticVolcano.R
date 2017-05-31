@@ -49,12 +49,16 @@ nCol = ncol(dat)
 datFCP = dat[,(nCol-2*length(myLevels)+1):nCol]
 
 # x-axis FC, y-axis pval
-xMax = max(unlist(lapply(seq(1,ncol(datFCP),by=2), function(x) max(datFCP[,x], na.rm=TRUE))))
-xMin = min(unlist(lapply(seq(1,ncol(datFCP),by=2), function(x) max(datFCP[,x], na.rm=TRUE))))
-yMax = max(unlist(lapply(seq(2,ncol(datFCP),by=2), function(x) max(datFCP[,x], na.rm=TRUE))))
-yMin = min(unlist(lapply(seq(2,ncol(datFCP),by=2), function(x) max(datFCP[,x], na.rm=TRUE))))
+#xMax = max(unlist(lapply(seq(1,ncol(datFCP),by=2), function(x) max(datFCP[,x], na.rm=TRUE))))
+#xMin = min(unlist(lapply(seq(1,ncol(datFCP),by=2), function(x) max(datFCP[,x], na.rm=TRUE))))
+#yMax = max(unlist(lapply(seq(2,ncol(datFCP),by=2), function(x) max(datFCP[,x], na.rm=TRUE))))
+#yMin = min(unlist(lapply(seq(2,ncol(datFCP),by=2), function(x) max(datFCP[,x], na.rm=TRUE))))
+#fcMax = ceiling(max(exp(xMax), 1/exp(xMin)))
+xMax = max(datFCP[,seq(1,ncol(datFCP),by=2)], na.rm=TRUE)
+xMin = min(datFCP[,seq(1,ncol(datFCP),by=2)], na.rm=TRUE)
+yMax = max(datFCP[,seq(2,ncol(datFCP),by=2)], na.rm=TRUE)
+yMin = min(datFCP[,seq(2,ncol(datFCP),by=2)], na.rm=TRUE)
 fcMax = ceiling(max(exp(xMax), 1/exp(xMin)))
-
 
 server <- shinyServer(function(input, output) {
   #make dynamic slider
@@ -98,16 +102,16 @@ server <- shinyServer(function(input, output) {
     }
   })
   
-  pcpDat <- reactive(datInput()[d()$pointNumber+1,1:(ncol(dat)-2*length(myLevels))])
-  
+  pcpDat <- reactive(datInput()[d()$pointNumber+1,1:(ncol(dat)-2*length(myPairs))])
   #pcpDat <- eventReactive(input$goButton, {data.frame()})
+  colNms <- colnames(dat[, 2:(ncol(dat)-2*length(myPairs))])
+  nVar <- length(2:(ncol(dat)-2*length(myPairs)))
   
-  colNms <- colnames(dat[, 2:(ncol(dat)-2*length(myLevels))])
-  nVar <- length(2:(ncol(dat)-2*length(myLevels)))
-  boxDat <- dat[, 1:(ncol(dat)-2*length(myLevels))] %>% gather(key, val, -c(ID))
+  boxDat <- dat[, 1:(ncol(dat)-2*length(myPairs))] %>% gather(key, val, -c(ID))
+  
   #output$selectedValues <- renderPrint({str(boxDat)})
   colnames(boxDat)[2:3] <- c("Sample","Counts")
-  BP <- ggplot(boxDat, aes(x = Sample, y = Counts)) + geom_boxplot()
+  BP <- ggplot(boxDat, aes(x = Sample, y = Counts)) + geom_boxplot() + theme(axis.text.x=element_text(angle=90, hjust=1))
   ggBP <- ggplotly(BP)
   
   output$boxPlot <- renderPlotly({
@@ -135,7 +139,7 @@ server <- shinyServer(function(input, output) {
       y: yArr,
       mode: 'lines',
       line: {
-      color: 'orange',
+      color: 'blue',
       width: 1
       },
       opacity: 0.9,
