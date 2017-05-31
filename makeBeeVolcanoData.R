@@ -15,8 +15,8 @@ k=1
 for (i in 1:(length(myLevels)-1)){
   for (j in (i+1):(length(myLevels))){
     res <- results(dds, contrast=c("treatment",myLevels[i],myLevels[j]))
-    dat[[paste(i,j,"FC",sep="-")]] <- as.data.frame(res@listData$log2FoldChange)
-    dat[[paste(i,j,"pval",sep="-")]] <- -1*log10(as.data.frame(res@listData$pvalue))
+    dat[[paste(i,j,"FC",sep="-")]] <- res@listData$log2FoldChange
+    dat[[paste(i,j,"pval",sep="-")]] <- -1*log10(res@listData$pvalue)
     myPairs[[k]] <- paste(myLevels[i], " and ", myLevels[j])
     k=k+1
   }
