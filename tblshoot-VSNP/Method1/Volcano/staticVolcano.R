@@ -30,17 +30,6 @@ ui <- shinyUI(pageWithSidebar(
 dds <- readRDS("/Users/lindz/BeeVirusDiet/beeDataDDSRLD.rds")[[1]]
 rld <- readRDS("/Users/lindz/BeeVirusDiet/beeDataDDSRLD.rds")[[2]]
 
-#group1 ="NP"
-#group2 ="VS"
-
-#sampleIndex <- which(sapply(colnames(assay(rld)), function(x) unlist(strsplit(x,"[.]"))[1]) %in% c(group1, group2))
-
-dat <- as.data.frame(assay(rld))
-setDT(dat, keep.rownames = TRUE)[]
-colnames(dat)[1] <- "ID"
-dat$ID <- as.factor(dat$ID)
-dat <- as.data.frame(dat)
-
 myLevels <- unique(sapply(colnames(assay(rld)), function(x) unlist(strsplit(x,"[.]"))[1]))
 myPairs <- list()
 
@@ -48,18 +37,24 @@ myPairs <- list()
 k=1
 for (i in 1:(length(myLevels)-1)){
   for (j in (i+1):(length(myLevels))){
-    res <- results(dds, contrast=c("treatment",myLevels[i],myLevels[j]))
-    dat[[paste(i,j,"FC",sep="-")]] <- as.data.frame(res@listData$log2FoldChange)
-    dat[[paste(i,j,"pval",sep="-")]] <- -1*log10(as.data.frame(res@listData$pvalue))
     myPairs[[k]] <- paste(myLevels[i], " and ", myLevels[j])
     k=k+1
   }
 }
 
+dat <- readRDS("/Users/lindz/BeeVirusDiet/beeVolcanoData.rds")
+
 nCol = ncol(dat)
 datFCP = dat[,(nCol-2*length(myLevels)+1):nCol]
 # x-axis FC, y-axis pval
-xMax = max(datFCP[,seq(1,ncol(datFCP),by=2)])
+
+xMax = max(unlist(lapply(seq(1,ncol(datFCP),by=2), function(x) max(datFCP[,x], na.rm=TRUE))))
+
+
+
+
+
+
 xMin = min(datFCP[,seq(1,ncol(datFCP),by=2)])
 yMax = max(datFCP[,seq(2,ncol(datFCP),by=2)])
 yMin = min(datFCP[,seq(2,ncol(datFCP),by=2)])
