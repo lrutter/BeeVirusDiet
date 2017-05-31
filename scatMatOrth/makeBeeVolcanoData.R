@@ -21,3 +21,5 @@ for (i in 1:(length(myLevels)-1)){
     k=k+1
   }
 }
+
+saveRDS(dat, "beeVolcanoData.rds")
