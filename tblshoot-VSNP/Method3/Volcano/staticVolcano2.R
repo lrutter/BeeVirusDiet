@@ -1,10 +1,16 @@
-outDir = "/Users/lindz/BeeVirusDiet/tblshoot-VSNP/Method1/Volcano"
+outDir = "/Users/lindz/BeeVirusDiet/tblshoot-VSNP/Method3/Volcano"
 
-group1 <- "VP"
-group2 <- "VR"
+group1 <- "NC"
+group2 <- "NS"
 
-dds <- readRDS("/Users/lindz/BeeVirusDiet/tblshoot-VSNP/Method1/beeDataDDSRLD.rds")[[1]]
-rld <- readRDS("/Users/lindz/BeeVirusDiet/tblshoot-VSNP/Method1/beeDataDDSRLD.rds")[[2]]
+dds <- readRDS(paste0("/Users/lindz/BeeVirusDiet/tblshoot-VSNP/Method3/comparisonData/", group1, "_", group2, ".rds"))[[1]]
+rld <- readRDS(paste0("/Users/lindz/BeeVirusDiet/tblshoot-VSNP/Method3/comparisonData/", group1, "_", group2, ".rds"))[[3]]
+
+dat <- as.data.frame(assay(rld))
+setDT(dat, keep.rownames = TRUE)[]
+colnames(dat)[1] <- "ID"
+dat$ID <- as.factor(dat$ID)
+dat <- as.data.frame(dat)
 
 myLevels <- unique(sapply(colnames(assay(rld)), function(x) unlist(strsplit(x,"[.]"))[1]))
 myPairs <- list()
@@ -13,12 +19,13 @@ myPairs <- list()
 k=1
 for (i in 1:(length(myLevels)-1)){
   for (j in (i+1):(length(myLevels))){
+    res <- results(dds, contrast=c("treatment",myLevels[i],myLevels[j]))
+    dat[[paste(i,j,"FC",sep="-")]] <- res@listData$log2FoldChange
+    dat[[paste(i,j,"pval",sep="-")]] <- -1*log10(res@listData$pvalue)
     myPairs[[k]] <- paste0(myLevels[i], " and ", myLevels[j])
     k=k+1
   }
 }
-
-dat <- readRDS("/Users/lindz/BeeVirusDiet/beeVolcanoData.rds")
 
 nCol = ncol(dat)
 datFCP = dat[,(nCol-2*length(myPairs)+1):nCol]
@@ -59,7 +66,7 @@ colnames(pcpDat2) <- c("ID", "Sample", "Count")
 
 jpeg(filename=paste0(outDir, "/", group1, "_", group2, ".jpg"), height=700, width=1100)
 require(gridExtra)
-plot1 <- ggplot(hexdf, aes(x=x, y=y, fill = counts, hexID=hexID)) + geom_hex(stat="identity") + coord_cartesian(xlim = c(xMin, xMax), ylim = c(yMin, yMax)) + geom_point(data=degData, aes(x=x2, y=y2), color = "red", size = 0.5, inherit.aes = FALSE) + xlab("log2(Fold change)") + ylab("-log10(p-value)")
+plot1 <- ggplot(hexdf, aes(x=x, y=y, fill = counts, hexID=hexID)) + geom_hex(stat="identity") + coord_cartesian(xlim = c(xMin, xMax), ylim = c(yMin, yMax)) + geom_point(data=degData, aes(x=x2, y=y2), color = "red", size = 0.8, inherit.aes = FALSE) + xlab("log2(Fold change)") + ylab("-log10(p-value)")
 plot2 <- ggplot(boxDat, aes(x = Sample, y = Count)) + geom_boxplot() + geom_line(data=pcpDat2, aes(x = Sample, y = Count, group = ID), size = 0.3, color = "red") + theme(axis.text.x=element_text(angle=90, hjust=1))
 grid.arrange(plot1, plot2, ncol=1)
 dev.off()

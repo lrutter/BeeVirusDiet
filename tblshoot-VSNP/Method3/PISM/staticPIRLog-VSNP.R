@@ -10,7 +10,7 @@ library(DESeq2)
 # Look at VS and NP normalized/filtered to entire dataset
 predLevel = 0.999999
 size = 0.1
-outDir = "/Users/lindz/BeeVirusDiet/tblshoot-VSNP/Method1/PISM"
+outDir = "/Users/lindz/BeeVirusDiet/tblshoot-VSNP/Method3/PISM"
 
 my_fn <- function(data, mapping, ...){
   xChar = as.character(mapping$x)
@@ -35,26 +35,17 @@ my_fn <- function(data, mapping, ...){
   p
 }
 
-# Following DESeq2 vignette (using rlog)
-dat <- read.delim(file="../AllLaneCount.txt",row.names=1,stringsAsFactors = FALSE)
-colnames(dat) <- c("NC.1", "NC.2", "NR.1", "VR.1", "NS.1", "VP.1", "NS.2", "VR.2", "NP.1", "VP.2", "VC.1", "NP.2", "VP.3", "NP.3", "VS.1", "VS.2", "VC.2", "NC.3", "VP.4", "NC.4", "NR.2", "VC.3", "VC.4", "NP.4", "VR.3", "NC.5", "VS.3", "NP.5", "VC.5", "VS.4", "NS.3", "VS.5", "VP.5", "NR.3", "NR.4", "VC.6", "NS.4", "NC.6", "NP.6", "VR.4", "NR.5", "NR.6", "NS.5", "VP.6", "NS.6", "VR.5", "VR.6", "VS.6")
-countdata <- dat[ , order(names(dat))]
-countdata <- as.matrix(countdata)
-coldata <- data.frame(row.names = colnames(countdata), virus = unlist(lapply(colnames(countdata), function (x) substring(unlist(strsplit(x, "[.]"))[1],1,1))), diet = unlist(lapply(colnames(countdata), function (x) substring(unlist(strsplit(x, "[.]"))[1],2,2))), treatment = unlist(lapply(colnames(countdata), function (x) unlist(strsplit(x, "[.]"))[1])))
+group1 ="NC"
+group2 ="NS"
 
-dds <- DESeqDataSetFromMatrix(countData = countdata, colData = coldata, design = ~ treatment)
-dds <- DESeq(dds)
-rld <- rlog(dds)
+dds <- readRDS(paste0("/Users/lindz/BeeVirusDiet/tblshoot-VSNP/Method3/comparisonData/", group1, "_", group2, ".rds"))[[1]]
+rld <- readRDS(paste0("/Users/lindz/BeeVirusDiet/tblshoot-VSNP/Method3/comparisonData/", group1, "_", group2, ".rds"))[[3]]
 
 # Create prediction interval data frame with upper and lower lines corresponding to sequence covering minimum and maximum of x values in original dataset (don't consider last column because it is not on the x axis in any of the individual scatterplots)
 lDat = as.data.frame(assay(rld))
 minX <- min(lDat[,c(2:(ncol(lDat)-1))])
 maxX <- max(lDat[,c(2:(ncol(lDat)-1))])
 newx <- seq(minX - (maxX-minX), maxX + (maxX-minX), by=0.05)
-
-# Change group1 and group2 as needed
-group1 ="VP"
-group2 ="VR"
 
 sampleIndex <- which(sapply(colnames(assay(rld)), function(x) unlist(strsplit(x,"[.]"))[1]) %in% c(group1, group2))
 
@@ -73,7 +64,7 @@ minVal = min(bindataSel[,-1])
 maxRange = c(minVal, maxVal)
 
 p <- ggpairs(bindataSel[,-1], lower = list(continuous = my_fn))
-jpeg(filename=paste0(outDir, "/", group1, "_", group2, "_level99.jpg"), height=1400, width=1400)
+jpeg(filename=paste0(outDir, "/", group1, "_", group2, "_level99_large.jpg"), height=1400, width=1400)
 print(p)
 dev.off()
 
