@@ -1,24 +1,48 @@
-outDir = "/Users/lindz/BeeVirusDiet/tblshoot-VSNP/Method1/Volcano"
+outDir = "/Users/lindz/BeeVirusDiet/tblshoot-VSNP/Method2/Volcano"
 
-group1 <- "VP"
-group2 <- "VR"
+dds <- readRDS("/Users/lindz/BeeVirusDiet/tblshoot-VSNP/Method2/beeDataDDSRLD.rds")[[1]]
+rld <- readRDS("/Users/lindz/BeeVirusDiet/tblshoot-VSNP/Method2/beeDataDDSRLD.rds")[[2]]
 
-dds <- readRDS("/Users/lindz/BeeVirusDiet/beeDataDDSRLD.rds")[[1]]
-rld <- readRDS("/Users/lindz/BeeVirusDiet/beeDataDDSRLD.rds")[[2]]
+dat <- as.data.frame(assay(rld))
+setDT(dat, keep.rownames = TRUE)[]
+colnames(dat)[1] <- "ID"
+dat$ID <- as.factor(dat$ID)
+dat <- as.data.frame(dat)
 
 myLevels <- unique(sapply(colnames(assay(rld)), function(x) unlist(strsplit(x,"[.]"))[1]))
 myPairs <- list()
 
-# Runs exact test on all pairs of groups and saves in list
-k=1
-for (i in 1:(length(myLevels)-1)){
-  for (j in (i+1):(length(myLevels))){
-    myPairs[[k]] <- paste0(myLevels[i], " and ", myLevels[j])
-    k=k+1
-  }
-}
+group1 ="S"
+group2 ="C"
+treatment = "diet"
 
-dat <- readRDS("/Users/lindz/BeeVirusDiet/beeVolcanoData.rds")
+res <- results(dds, contrast=c(treatment, group1, group2))
+dat[[paste("1","2","FC",sep="-")]] <- res@listData$log2FoldChange
+dat[[paste("1","2","pval",sep="-")]] <- -1*log10(res@listData$pvalue)
+
+# dds <- readRDS("/Users/lindz/BeeVirusDiet/tblshoot-VSNP/Method2/beeDataDDSRLD.rds")[[1]]
+# rld <- readRDS("/Users/lindz/BeeVirusDiet/tblshoot-VSNP/Method2/beeDataDDSRLD.rds")[[2]]
+# 
+# # Change group1 and group2 as needed
+# group1 ="N"
+# group2 ="V"
+# treatment = "virus"
+# 
+# myLevels <- unique(sapply(colnames(assay(rld)), function(x) unlist(strsplit(x,"[.]"))[1]))
+# myPairs <- list()
+# 
+# # Runs exact test on all pairs of groups and saves in list
+# k=1
+# for (i in 1:(length(myLevels)-1)){
+#   for (j in (i+1):(length(myLevels))){
+#     myPairs[[k]] <- paste0(myLevels[i], " and ", myLevels[j])
+#     k=k+1
+#   }
+# }
+# 
+# dat <- readRDS("/Users/lindz/BeeVirusDiet/beeVolcanoData.rds")
+
+myPairs <- paste0("S and C")
 
 nCol = ncol(dat)
 datFCP = dat[,(nCol-2*length(myPairs)+1):nCol]
@@ -34,7 +58,7 @@ pairNum <- as.numeric(which(myPairs==paste0(group1, " and ", group2)))
 col1 <- colnames(dat)[nCol-2*length(myPairs)+2*pairNum]
 col2 <- colnames(dat)[nCol-2*length(myPairs)+2*pairNum-1]
 
-res <- results(dds, contrast=c("treatment",group1,group2))
+res <- results(dds, contrast=c(treatment,group1,group2))
 degIndex <- which(res@listData$padj<0.05) 
 degData <- dat[degIndex,]
 
@@ -59,7 +83,7 @@ colnames(pcpDat2) <- c("ID", "Sample", "Count")
 
 jpeg(filename=paste0(outDir, "/", group1, "_", group2, ".jpg"), height=700, width=1100)
 require(gridExtra)
-plot1 <- ggplot(hexdf, aes(x=x, y=y, fill = counts, hexID=hexID)) + geom_hex(stat="identity") + coord_cartesian(xlim = c(xMin, xMax), ylim = c(yMin, yMax)) + geom_point(data=degData, aes(x=x2, y=y2), color = "red", size = 0.5, inherit.aes = FALSE) + xlab("log2(Fold change)") + ylab("-log10(p-value)")
-plot2 <- ggplot(boxDat, aes(x = Sample, y = Count)) + geom_boxplot() + geom_line(data=pcpDat2, aes(x = Sample, y = Count, group = ID), size = 0.3, color = "red") + theme(axis.text.x=element_text(angle=90, hjust=1))
+plot1 <- ggplot(hexdf, aes(x=x, y=y, fill = counts, hexID=hexID)) + geom_hex(stat="identity") + coord_cartesian(xlim = c(xMin, xMax + 0.2), ylim = c(yMin, yMax)) + geom_point(data=degData, aes(x=x2, y=y2), color = "red", size = 0.5, inherit.aes = FALSE) + xlab("log2(Fold change)") + ylab("-log10(p-value)")
+plot2 <- ggplot(boxDat, aes(x = Sample, y = Count)) + geom_boxplot() + geom_line(data=pcpDat2, aes(x = Sample, y = Count, group = ID), size = 2, color = "red") + theme(axis.text.x=element_text(angle=90, hjust=1))
 grid.arrange(plot1, plot2, ncol=1)
 dev.off()
