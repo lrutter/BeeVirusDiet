@@ -19,13 +19,13 @@ my_fn <- function(data, mapping, ...){
   h <- hexbin(x=x, y=y, xbins=xbins, shape=1, IDs=TRUE, xbnds=maxRange, ybnds=maxRange)
   hexdf <- data.frame (hcell2xy (h),  hexID = h@cell, counts = h@count)
   attr(hexdf, "cID") <- h@cID
-  p <- ggplot(hexdf, aes(x=x, y=y, fill = counts, hexID=hexID)) + geom_hex(stat="identity") + geom_abline(intercept = 0, color = "red", size = 0.25) + coord_cartesian(xlim = c(-1*buffer, maxRange[2]+buffer), ylim = c(-1*buffer, maxRange[2]+buffer)) + geom_point(data = degData, aes_string(x=xChar, y=yChar), inherit.aes = FALSE, color = "orange", size = 4)
+  p <- ggplot(hexdf, aes(x=x, y=y, fill = counts, hexID=hexID)) + geom_hex(stat="identity") + geom_abline(intercept = 0, color = "red", size = 0.25) + coord_cartesian(xlim = c(-1*buffer, maxRange[2]+buffer), ylim = c(-1*buffer, maxRange[2]+buffer)) + geom_point(data = degData, aes_string(x=xChar, y=yChar), inherit.aes = FALSE, color = "orange", size = 2)
   p
 }
 
 # Change group1 and group2 as needed
-group1 ="NC"
-group2 ="NS"
+group1 ="VP"
+group2 ="VS"
 
 dds <- readRDS(paste0("/Users/lindz/BeeVirusDiet/tblshoot-VSNP/Method3/comparisonData/", group1, "_", group2, ".rds"))[[1]]
 rld <- readRDS(paste0("/Users/lindz/BeeVirusDiet/tblshoot-VSNP/Method3/comparisonData/", group1, "_", group2, ".rds"))[[3]]
@@ -48,7 +48,7 @@ maxRange = c(minVal, maxVal)
 xbins=10
 buffer = maxRange[2]/xbins
 p <- ggpairs(bindataSel[,-1], lower = list(continuous = my_fn))
-jpeg(filename=paste0(outDir, "/", group1, "_", group2, "_larger.jpg"), height=1400, width=1400)
+jpeg(filename=paste0(outDir, "/", group1, "_", group2, "_large.jpg"), height=1400, width=1400)
 print(p)
 dev.off()
 

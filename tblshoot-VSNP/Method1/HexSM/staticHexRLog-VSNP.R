@@ -19,7 +19,7 @@ my_fn <- function(data, mapping, ...){
   h <- hexbin(x=x, y=y, xbins=xbins, shape=1, IDs=TRUE, xbnds=maxRange, ybnds=maxRange)
   hexdf <- data.frame (hcell2xy (h),  hexID = h@cell, counts = h@count)
   attr(hexdf, "cID") <- h@cID
-  p <- ggplot(hexdf, aes(x=x, y=y, fill = counts, hexID=hexID)) + geom_hex(stat="identity") + geom_abline(intercept = 0, color = "red", size = 0.25) + coord_cartesian(xlim = c(-1*buffer, maxRange[2]+buffer), ylim = c(-1*buffer, maxRange[2]+buffer)) + geom_point(data = degData, aes_string(x=xChar, y=yChar), inherit.aes = FALSE, color = "orange", size = 2)
+  p <- ggplot(hexdf, aes(x=x, y=y, fill = counts, hexID=hexID)) + geom_hex(stat="identity") + geom_abline(intercept = 0, color = "red", size = 0.25) + coord_cartesian(xlim = c(-1*buffer, maxRange[2]+buffer), ylim = c(-1*buffer, maxRange[2]+buffer)) + geom_point(data = degData, aes_string(x=xChar, y=yChar), inherit.aes = FALSE, color = "orange", size = 0.5)
   p
 }
 
@@ -35,8 +35,8 @@ dds <- DESeq(dds)
 rld <- rlog(dds)
 
 # Change group1 and group2 as needed
-group1 ="VC"
-group2 ="VS"
+group1 ="VP"
+group2 ="VR"
 
 sampleIndex <- which(sapply(colnames(assay(rld)), function(x) unlist(strsplit(x,"[.]"))[1]) %in% c(group1, group2))
 
