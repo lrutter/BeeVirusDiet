@@ -13,12 +13,17 @@ library(data.table)
 library(ggplot2)
 library(DESeq2)
 
+dds <- readRDS("/Users/lindz/BeeVirusDiet/tblshoot-VSNP/Method1/beeDataDDSRLD.rds")[[1]]
+rld <- readRDS("/Users/lindz/BeeVirusDiet/tblshoot-VSNP/Method1/beeDataDDSRLD.rds")[[2]]
+
+myPairs <- levels(dds@colData@listData$treatment)
+
 ui <- shinyUI(fluidPage(
   titlePanel("title panel"),
 
   sidebarLayout(position = "left",
     sidebarPanel(
-      #uiOutput("selInput"),
+      selectizeInput("selPair", "Pairs:", choices = myPairs, multiple = TRUE, options = list(maxItems = 2)),
       actionButton("goButton", "Go!"),
       width = 3
     ),
@@ -32,8 +37,7 @@ ui <- shinyUI(fluidPage(
 
 server <- shinyServer(function(input, output, session) {
   
-  dds <- readRDS("/Users/lindz/BeeVirusDiet/tblshoot-VSNP/Method1/beeDataDDSRLD.rds")[[1]]
-  rld <- readRDS("/Users/lindz/BeeVirusDiet/tblshoot-VSNP/Method1/beeDataDDSRLD.rds")[[2]]
+  pairNum <- reactive(as.numeric(which(myPairs==input$selPair)))
   
   # Change group1 and group2 as needed
   group1 ="VP"
