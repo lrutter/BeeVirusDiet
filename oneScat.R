@@ -17,8 +17,9 @@ ui <- shinyUI(fluidPage(
   #uiOutput("selInput"),
   actionButton("goButton", "Go!"),
   verbatimTextOutput("test2"),
-  #verbatimTextOutput("selectedValues"),
-  plotlyOutput("scatMatPlot")
+  verbatimTextOutput("selectedValues"),
+  plotlyOutput("scatMatPlot"),
+  plotlyOutput("boxPlot")
 ))
 
 server <- shinyServer(function(input, output, session) {
@@ -26,25 +27,25 @@ server <- shinyServer(function(input, output, session) {
   dds <- readRDS("/Users/lindz/BeeVirusDiet/tblshoot-VSNP/Method1/beeDataDDSRLD.rds")[[1]]
   rld <- readRDS("/Users/lindz/BeeVirusDiet/tblshoot-VSNP/Method1/beeDataDDSRLD.rds")[[2]]
   
-output$scatMatPlot <- renderPlotly({  
-  
   # Change group1 and group2 as needed
   group1 ="VP"
   group2 ="VR"
+  
+  sampleIndex <- which(sapply(colnames(assay(rld)), function(x) unlist(strsplit(x,"[.]"))[1]) %in% c(group1, group2))
   
   bindataSel <- as.data.frame(assay(rld))[, sampleIndex]
   setDT(bindataSel, keep.rownames = TRUE)[]
   colnames(bindataSel)[1] <- "ID"
   bindataSel$ID <- as.character(bindataSel$ID)
   bindataSel <- as.data.frame(bindataSel) #15314*13
-  
-  sampleIndex <- which(sapply(colnames(assay(rld)), function(x) unlist(strsplit(x,"[.]"))[1]) %in% c(group1, group2))
   sampleIndex1 <- which(sapply(colnames(bindataSel), function(x) unlist(strsplit(x,"[.]"))[1]) %in% c(group1))
   sampleIndex2 <- which(sapply(colnames(bindataSel), function(x) unlist(strsplit(x,"[.]"))[1]) %in% c(group2))
   
   res <- results(dds, contrast=c("treatment",group1,group2))
   degIndex <- which(res@listData$padj<0.05) 
   resSort <- res[ order(res[,6]), rm.NA=TRUE]
+  
+output$scatMatPlot <- renderPlotly({  
   
   #orangeDots <- data.frame(x=c1, y=c2)
   
@@ -110,8 +111,17 @@ output$scatMatPlot <- renderPlotly({
   ggPS %>% onRender("
     function(el, x, data) {
 
+noPoint = x.data.length;
+
     Shiny.addCustomMessageHandler('lines',
     function(drawLines) {
+
+console.log(x.data)
+
+if (x.data.length > noPoint){
+Plotly.deleteTraces(el.id, x.data.length-1);
+}
+
     var Traces = [];
     var trace = {
     x: drawLines.slice(0, drawLines.length/2),
@@ -128,6 +138,62 @@ output$scatMatPlot <- renderPlotly({
     });
     }" )
   })
+
+
+  
+  
+  output$boxPlot <- renderPlotly({
+    nVar = ncol(bindataSel)
+    colNms <- colnames(bindataSel[, c(2:nVar)])
+    boxDat <- bindataSel[, c(1:nVar)] %>% gather(key, val, -c(ID))
+    
+    output$selectedValues <- renderPrint({str(boxDat)})
+    
+    BP <- ggplot(boxDat, aes(x = key, y = val)) + geom_boxplot()
+    ggBP <- ggplotly(BP)
+    
+    ggBP %>% onRender("
+      function(el, x, data) {
+      console.log('redraw PCP and box')
+      
+      function range(start, stop, step){
+      var a=[start], b=start;
+      while(b<stop){b+=step;a.push(b)}
+      return a;
+      };
+      
+      //var Traces = [];
+      //var dLength = data.pcpDat.length
+      //var vLength = data.nVar
+      //var cNames = data.colNms
+      
+      //for (a=0; a<dLength; a++){
+      //xArr = [];
+      //yArr = [];
+      //for (b=0; b<vLength; b++){
+      //xArr.push(b+1)
+      //yArr.push(data.pcpDat[a][cNames[b]]);
+      //}
+      
+      //var traceHiLine = {
+      //x: xArr,
+      //y: yArr,
+      //mode: 'lines',
+      //line: {
+      //color: 'orange',
+      //width: 1
+      //},
+      //opacity: 0.9,
+      //}
+      //Traces.push(traceHiLine);
+      //}
+      //Plotly.addTraces(el.id, Traces);
+      //$('#goButton').on('click',function() {
+      //console.log('goButtonChangePCP')
+      //console.log(range(1, data.pcpDat.length, 1))
+      //Plotly.deleteTraces(el.id, range(1, data.pcpDat.length, 1));
+      //})
+      }")})
 })
 
 shinyApp(ui, server)
