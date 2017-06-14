@@ -14,12 +14,20 @@ library(ggplot2)
 library(DESeq2)
 
 ui <- shinyUI(fluidPage(
-  #uiOutput("selInput"),
-  actionButton("goButton", "Go!"),
-  verbatimTextOutput("test2"),
-  verbatimTextOutput("selectedValues"),
-  plotlyOutput("scatMatPlot"),
-  plotlyOutput("boxPlot")
+  titlePanel("title panel"),
+
+  sidebarLayout(position = "left",
+    sidebarPanel(
+      #uiOutput("selInput"),
+      actionButton("goButton", "Go!"),
+      width = 3
+    ),
+    mainPanel(
+      fluidRow(
+        splitLayout(cellWidths = c("50%", "50%"), plotlyOutput("scatMatPlot"), plotlyOutput("boxPlot"))
+      )
+    )
+  )
 ))
 
 server <- shinyServer(function(input, output, session) {
@@ -60,7 +68,7 @@ output$scatMatPlot <- renderPlotly({
   h <- hexbin(x=x, y=y, xbins=xbins, shape=1, IDs=TRUE, xbnds=maxRange, ybnds=maxRange)
   hexdf <- data.frame (hcell2xy (h),  hexID = h@cell, counts = h@count)
   attr(hexdf, "cID") <- h@cID
-  p <- ggplot(hexdf, aes(x=x, y=y, fill = counts, hexID=hexID)) + geom_hex(stat="identity") + geom_abline(intercept = 0, color = "red", size = 0.25) + coord_cartesian(xlim = c(maxRange[1]-1*buffer, maxRange[2]+buffer), ylim = c(maxRange[1]-1*buffer, maxRange[2]+buffer))
+  p <- ggplot(hexdf, aes(x=x, y=y, fill = counts, hexID=hexID)) + geom_hex(stat="identity") + geom_abline(intercept = 0, color = "red", size = 0.25) + coord_cartesian(xlim = c(maxRange[1]-1*buffer, maxRange[2]+buffer), ylim = c(maxRange[1]-1*buffer, maxRange[2]+buffer)) + coord_equal(ratio=1)
   
   #p + geom_point(aes(x=x, y=y), data=orangeDots, inherit.aes = FALSE, color="orange")
   
@@ -99,12 +107,8 @@ output$scatMatPlot <- renderPlotly({
     c(c1, c2)
   })
   
-  output$test2 <- renderPrint({
-    str(datInput())
-  })
-  
   observe({
-    session$sendCustomMessage(type = "lines", datInput())
+    session$sendCustomMessage(type = "points", datInput())
   })
   
   
@@ -113,10 +117,8 @@ output$scatMatPlot <- renderPlotly({
 
 noPoint = x.data.length;
 
-    Shiny.addCustomMessageHandler('lines',
-    function(drawLines) {
-
-console.log(x.data)
+    Shiny.addCustomMessageHandler('points',
+    function(drawPoints) {
 
 if (x.data.length > noPoint){
 Plotly.deleteTraces(el.id, x.data.length-1);
@@ -124,8 +126,8 @@ Plotly.deleteTraces(el.id, x.data.length-1);
 
     var Traces = [];
     var trace = {
-    x: drawLines.slice(0, drawLines.length/2),
-    y: drawLines.slice(drawLines.length/2, drawLines.length),
+    x: drawPoints.slice(0, drawPoints.length/2),
+    y: drawPoints.slice(drawPoints.length/2, drawPoints.length),
     mode: 'markers',
     marker: {
     color: 'orange',
@@ -139,61 +141,64 @@ Plotly.deleteTraces(el.id, x.data.length-1);
     }" )
   })
 
+output$boxPlot <- renderPlotly({
+  nVar = ncol(bindataSel)
+  colNms <- colnames(bindataSel[, c(2:nVar)])
+  boxDat <- bindataSel[, c(1:nVar)] %>% gather(key, val, -c(ID))
+  BP <- ggplot(boxDat, aes(x = key, y = val)) + geom_boxplot()
+  ggBP <- ggplotly(BP)
+  
+  datInput2 <- eventReactive(input$goButton, {
+    #print(input$goButton)
+    # Chose particular gene
+    g <- rownames(resSort)[input$goButton]
+    as.numeric(unname(unlist(bindataSel[which(bindataSel$ID==g),])))[-1]
+  })
+  
+  output$test2 <- renderPrint({
+    str(datInput2())
+  })
+  
+  observe({
+    session$sendCustomMessage(type = "lines", datInput2())
+  })
+  
+  ggBP %>% onRender("
+    function(el, x, data) {
 
+  noPoint = x.data.length;
   
+  function range(start, stop, step){
+    var a=[start], b=start;
+    while(b<stop){b+=step;a.push(b)}
+    return a;
+  };
   
-  output$boxPlot <- renderPlotly({
-    nVar = ncol(bindataSel)
-    colNms <- colnames(bindataSel[, c(2:nVar)])
-    boxDat <- bindataSel[, c(1:nVar)] %>% gather(key, val, -c(ID))
+  Shiny.addCustomMessageHandler('lines',
+    function(drawLines) {
+  
+    if (x.data.length > noPoint){
+      Plotly.deleteTraces(el.id, x.data.length-1);
+    }
+  
+    var dLength = drawLines.length
     
-    output$selectedValues <- renderPrint({str(boxDat)})
-    
-    BP <- ggplot(boxDat, aes(x = key, y = val)) + geom_boxplot()
-    ggBP <- ggplotly(BP)
-    
-    ggBP %>% onRender("
-      function(el, x, data) {
-      console.log('redraw PCP and box')
-      
-      function range(start, stop, step){
-      var a=[start], b=start;
-      while(b<stop){b+=step;a.push(b)}
-      return a;
-      };
-      
-      //var Traces = [];
-      //var dLength = data.pcpDat.length
-      //var vLength = data.nVar
-      //var cNames = data.colNms
-      
-      //for (a=0; a<dLength; a++){
-      //xArr = [];
-      //yArr = [];
-      //for (b=0; b<vLength; b++){
-      //xArr.push(b+1)
-      //yArr.push(data.pcpDat[a][cNames[b]]);
-      //}
-      
-      //var traceHiLine = {
-      //x: xArr,
-      //y: yArr,
-      //mode: 'lines',
-      //line: {
-      //color: 'orange',
-      //width: 1
-      //},
-      //opacity: 0.9,
-      //}
-      //Traces.push(traceHiLine);
-      //}
-      //Plotly.addTraces(el.id, Traces);
-      //$('#goButton').on('click',function() {
-      //console.log('goButtonChangePCP')
-      //console.log(range(1, data.pcpDat.length, 1))
-      //Plotly.deleteTraces(el.id, range(1, data.pcpDat.length, 1));
-      //})
-      }")})
+    var Traces = [];
+    var traceLine = {
+      x: range(1, dLength, 1),
+      y: drawLines,
+      mode: 'lines',
+      line: {
+        color: 'orange',
+        width: 1
+      },
+      opacity: 0.9,
+    }
+    Traces.push(traceLine);
+    Plotly.addTraces(el.id, Traces);
+    })
+    }")})
+
 })
 
 shinyApp(ui, server)
