@@ -76,8 +76,9 @@ output$scatMatPlot <- renderPlotly({
   }
   
   datInput <- eventReactive(input$goButton, {
+    print(input$goButton)
     # Chose particular gene
-    g <- rownames(resSort)[1]
+    g <- rownames(resSort)[input$goButton]
     currGene <- bindataSel[which(bindataSel$ID==g),]
     currGene1 <- unname(unlist(currGene[,sampleIndex1]))
     currGene2 <- unname(unlist(currGene[,sampleIndex2]))
@@ -109,18 +110,8 @@ output$scatMatPlot <- renderPlotly({
   ggPS %>% onRender("
     function(el, x, data) {
 
-    // Save selected row IDs for PCP
-    //Shiny.onInputChange('selID', selID);
-
-Shiny.addCustomMessageHandler('lines',
+    Shiny.addCustomMessageHandler('lines',
     function(drawLines) {
-    
-    //vecLength <- drawLines.length
-    //console.log(vecLength)
-    console.log(drawLines.length)
-    console.log(drawLines.length/2)
-    console.log(drawLines.slice(0, drawLines.length/2))
-
     var Traces = [];
     var trace = {
     x: drawLines.slice(0, drawLines.length/2),
