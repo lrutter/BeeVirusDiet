@@ -21,8 +21,6 @@ ui <- shinyUI(fluidPage(
 server <- shinyServer(function(input, output) {
   
   bindata <- readRDS("beeDataFN.rds")
-  #set.seed(1)
-  #bindata <- data.frame(ID = paste0("ID",1:100), A.1=abs(rnorm(100)), A.2=abs(rnorm(100)), A.3=abs(rnorm(100)), B.1=abs(rnorm(100)), B.2=abs(rnorm(100)), C.1=abs(rnorm(100)), C.2=abs(rnorm(100)))
   bindata$ID <- as.character(bindata$ID)
   colNames <- colnames(bindata)
   myPairs <- unique(sapply(colNames, function(x) unlist(strsplit(x,"[.]"))[1]))
