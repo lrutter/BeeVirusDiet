@@ -142,6 +142,8 @@ Below we save the DEGs from all pairwise combinations of treatment groups.
 ```{r}
 allPairs = data.frame(Treatment1 = factor(), Treatment2 = factor(), NumberDEG = numeric(), FirstLarger = numeric(), SecondLarger = numeric())
 
+listDEG <- list()
+
 for (i in 1:(ncol(fit)-1)){
   for (j in (i+1):ncol(fit)){
     contrast=rep(0,ncol(fit))
@@ -151,16 +153,18 @@ for (i in 1:(ncol(fit)-1)){
     lrt <- topTags(lrt, n = nrow(y[[1]]))[[1]]
     lrt <- lrt[which(lrt$FDR<0.05),]
     
-    df <- y[[1]][rownames(y[[1]]) %in% rownames(lrt), c(which(sapply(colnames(y[[1]]), function(x) strsplit(x, "[.]")[[1]][1]) %in% (colnames(fit)[i])), which(sapply(colnames(y[[1]]), function(x) strsplit(x, "[.]")[[1]][1]) %in% (colnames(fit)[j])))]
-    firstLarger <- length(which(apply(df, 1, function(x) mean(x[1:6]) > mean(x[7:12]))))
-    secondLarger <- length(which(apply(df, 1, function(x) mean(x[1:6]) < mean(x[7:12]))))
-    saveRDS(lrt, file=paste0(thisPath, "/DEGPairs/", colnames(fit)[i], colnames(fit)[j],".Rds"))
-    lrtLength <- nrow(lrt)
-    allPairs = rbind(allPairs, data.frame(Treatment1 = factor(colnames(fit)[i]), Treatment2 = factor(colnames(fit)[j]), NumberDEG = lrtLength, FirstLarger = firstLarger, SecondLarger = secondLarger))
+    #df <- y[[1]][rownames(y[[1]]) %in% rownames(lrt), c(which(sapply(colnames(y[[1]]), function(x) strsplit(x, "[.]")[[1]][1]) %in% (colnames(fit)[i])), which(sapply(colnames(y[[1]]), function(x) strsplit(x, "[.]")[[1]][1]) %in% (colnames(fit)[j])))]
+    #firstLarger <- length(which(apply(df, 1, function(x) mean(x[1:6]) > mean(x[7:12]))))
+    #secondLarger <- length(which(apply(df, 1, function(x) mean(x[1:6]) < mean(x[7:12]))))
+    #saveRDS(lrt, file=paste0(thisPath, "/DEGPairs/", colnames(fit)[i], colnames(fit)[j],".Rds"))
+    listDEG[[paste0(colnames(fit)[i], colnames(fit)[j])]] <- lrt
+    #lrtLength <- nrow(lrt)
+    #allPairs = rbind(allPairs, data.frame(Treatment1 = factor(colnames(fit)[i]), Treatment2 = factor(colnames(fit)[j]), NumberDEG = lrtLength, FirstLarger = firstLarger, SecondLarger = secondLarger))
   }
 }
 allPairs <- allPairs[order(allPairs$NumberDEG),]
 saveRDS(allPairs, file=paste0(thisPath, "/DEGPairs/allPairs.Rds"))
+saveRDS(listDEG, file=paste0(thisPath, "/DEGPairs/listDEG.Rds"))
 ```
 
 ```{r}
