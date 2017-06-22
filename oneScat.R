@@ -24,7 +24,7 @@ ui <- shinyUI(fluidPage(
   
   sidebarLayout(position = "left",
     sidebarPanel(
-      selectizeInput("selPair", "Pairs:", choices = myPairs, multiple = TRUE, options = list(maxItems = 2)),
+      selectizeInput("selPair", "Pairs:", choices = myPairs, multiple = TRUE, options = list(maxItems = 2, minItems = 2)),
       actionButton("goButton", "Go!"),
       verbatimTextOutput("test1"),
       width = 3

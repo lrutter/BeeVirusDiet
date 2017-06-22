@@ -48,17 +48,40 @@ uTreat <- unique(unlist(lapply(colnames(countdata), function (x) unlist(strsplit
 
 allPairs = data.frame(Treatment1 = factor(), Treatment2 = factor(), NumberDEG = numeric())
 
+signList = data.frame(Treatment1 = factor(), Treatment2 = factor(), Positive = numeric(), Negative = numeric())
+
 for (i in 1:(length(uTreat)-1)){
   for (j in (i+1):length(uTreat)){
     res <- results(dds, contrast=c("treatment",uTreat[i],uTreat[j]))
-    #saveRDS(res, file=paste0(thisPath, "/DEGPairs/", colnames(fit)[i], colnames(fit)[j],".Rds"))
-    degLength <- length(which((res@listData)$padj <0.05))
-    allPairs = rbind(allPairs, data.frame(Treatment1 = uTreat[i], Treatment2 = uTreat[j], NumberDEG = degLength))
+    #degLength <- length(which((res@listData)$padj <0.05))
+    #allPairs = rbind(allPairs, data.frame(Treatment1 = uTreat[i], Treatment2 = uTreat[j], NumberDEG = degLength))
+    degs <- which((res@listData)$padj <0.05)
+    signList = rbind(signList, data.frame(Treatment1 = uTreat[i], Treatment2 = uTreat[j], Positive = length(which(res@listData$stat[degs] >0)), Negative = length(which(res@listData$stat[degs]<0))))
   }
 }
 allPairs <- allPairs[order(allPairs$NumberDEG),]
 allPairs
 ```
+
+Save DEGs for each pair
+```{r}
+topGenes = list()
+
+for (i in 1:(length(uTreat)-1)){
+  for (j in (i+1):length(uTreat)){
+    degList = data.frame(genes = character(), pval = numeric())
+    res <- results(dds, contrast=c("treatment",uTreat[i],uTreat[j]))
+    deg <- which((res@listData)$padj <0.05)
+    pval <- (res@listData)$padj[deg]
+    genes <- res@rownames[deg]
+    degList = rbind(degList, data.frame(genes = genes, pval = pval))
+    topGenes[[ paste0(uTreat[i], uTreat[j]) ]] <- degList
+  }
+}
+saveRDS(topGenes, file="topGenes_DEG.Rds")
+```
+
+
 
 ```{r}
 plotMA(res, ylim = c(-1, 1000000), xlim=c(-1, 200000))
