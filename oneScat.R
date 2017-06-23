@@ -44,8 +44,9 @@ server <- shinyServer(function(input, output, session) {
   # Change group1 and group2 as needed
   group1 =reactive(pairNum()[1])
   group2 =reactive(pairNum()[2])
+  print(group2)
   
-  sampleIndex <- reactive(which(sapply(colnames(assay(rld)), function(x) unlist(strsplit(x,"[.]"))[1]) %in% c(group1(), group2())))
+  sampleIndex <- reactive(which(sapply(colnames(assay(rld)), function(x) unlist(strsplit(x,"[.]"))[1]) %in% c(isolate(group1()), group2())))
   
   bindataSel <- eventReactive(sampleIndex(), {
     bindataSel <- as.data.frame(assay(rld))[, sampleIndex()]
@@ -54,10 +55,10 @@ server <- shinyServer(function(input, output, session) {
     as.data.frame(bindataSel) #15314*13
   })
   
-  sampleIndex1 <- reactive(which(sapply(colnames(bindataSel()), function(x) unlist(strsplit(x,"[.]"))[1]) %in% c(group1())))
-  sampleIndex2 <- reactive(which(sapply(colnames(bindataSel()), function(x) unlist(strsplit(x,"[.]"))[1]) %in% c(group2())))
+  sampleIndex1 <- reactive(which(sapply(colnames(bindataSel()), function(x) unlist(strsplit(x,"[.]"))[1]) %in% c(isolate(group1()))))
+  sampleIndex2 <- reactive(which(sapply(colnames(bindataSel()), function(x) unlist(strsplit(x,"[.]"))[1]) %in% c(isolate(group2()))))
   
-  resSort <- eventReactive(bindataSel(), {
+  resSort <- eventReactive(bindataSel(), { # if change to input$goButton then fix
     res <- reactive(results(dds, contrast=c("treatment",group1(),group2())))
     degIndex <- reactive(which(res()@listData$padj<0.05))
     resSort <- reactive(res()[ order(res()[,6]), rm.NA=TRUE])
@@ -90,7 +91,6 @@ server <- shinyServer(function(input, output, session) {
   }
   ggPS})
     
-  output$ggpSPlot <- renderPlotly({ggPS()}) 
 
   output$scatMatPlot <- renderPlotly({
 
