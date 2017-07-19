@@ -81,10 +81,9 @@ for (i in 1:(length(uTreat)-1)){
 saveRDS(topGenes, file="topGenes_DEG.Rds")
 ```
 
-
-
 ```{r}
-plotMA(res, ylim = c(-1, 1000000), xlim=c(-1, 200000))
+#plotMA(res, ylim = c(-1, 1000000), xlim=c(-1, 200000))
+plotMA(res)
 ```
 
 ```{r}
@@ -120,9 +119,17 @@ plot(log2(1+counts(dds, normalized=TRUE)[, 1:2] ), col="#00000020", pch=20, cex=
 plot(assay(rld)[, c(2,3)], col="#00000020", pch=20, cex=0.3)
 ```
 
+assay(rld)
+```{r}
+ggparcoord(data.frame(counts(dds, normalized=TRUE)/colMeans(counts(dds, normalized=TRUE))), columns=1:48, alphaLines=0, boxplot=TRUE, scale="globalminmax") + coord_flip()
+
+ggparcoord(data.frame(log2(1+counts(dds, normalized=TRUE))/colMeans(log2(1+counts(dds, normalized=TRUE)))), columns=1:48, alphaLines=0, boxplot=TRUE, scale="globalminmax") + coord_flip()
+
+ggparcoord(data.frame(assay(rld)/colMeans(assay(rld))), columns=1:48, alphaLines=0, boxplot=TRUE, scale="globalminmax") + coord_flip()
+```
+
 ```{r}
 sampleDists <- dist( t( assay(rld) ) )
-sampleDists
 ```
 
 ```{r}
@@ -135,9 +142,8 @@ colours = colorRampPalette(rev(brewer.pal(9, "Blues")))(255)
 heatmap.2(sampleDistMatrix, trace="none", col=colours)
 ```
 
-
 ```{r}
-print(plotPCA(rld, intgroup="treatment") )
+print(plotPCA(rld, intgroup="treatment") + geom_text(aes(label = rownames(rld@colData))))
 ```
 
 ```{r}

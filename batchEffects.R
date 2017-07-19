@@ -15,3 +15,4 @@ qplot(rt1$p.value, fill = I("tan3"))
 x[, 6:15] <- x[, 6:15]+5
 rt2 <- rowttests(x, fac)
 qplot(rt2$p.value, fill = I("coral3"))
+
