@@ -28,7 +28,9 @@ library(GGally)
 library(EDASeq)
 library(utils)
 
-thisPath <- "/Users/lindz/BeeVirusDiet/edgeR"
+thisPath <- "/Users/lindz/BeeVirusDiet/checkPval"
+dir.create(paste(thisPath, "/DEGPairs", sep=""))
+dir.create(paste(thisPath, "/pvalPlots", sep=""))
 
 beeCounts <-read.delim(file="../AllLaneCount.txt",row.names=1,stringsAsFactors = FALSE)
 
@@ -116,10 +118,11 @@ for (i in 1:(ncol(fit)-1)){
     pVals <- data.frame(x = lrt$PValue)
     ggplot(lrt$Pvalue) + geom_histogram()
     ggplot(pVals, aes(x=x)) + geom_histogram()
-    
-    png(filename=paste0(thisPath, "/pvalPlots/", colnames(fit)[i], colnames(fit)[j],".Rds"))
-    ggplot(pVals, aes(x=x)) + geom_histogram() + xlab("p-value") + ylab("Gene count") + ggtitle(paste0(colnames(fit)[1], " versus ", colnames(fit)[2]))
-    dev.off()
+
+p <- ggplot(pVals, aes(x=x)) + geom_histogram() + xlab("p-value") + ylab("Gene count") #+ ggtitle(paste0(colnames(fit)[1], " versus ", colnames(fit)[2]))
+jpeg(filename = paste0(thisPath, "/pvalPlots/", colnames(fit)[i], "_", colnames(fit)[j],".jpg"))
+print(p)
+dev.off()
     
     saveRDS(lrt, file=paste0(thisPath, "/DEGPairs/", colnames(fit)[i], colnames(fit)[j],".Rds"))
     
