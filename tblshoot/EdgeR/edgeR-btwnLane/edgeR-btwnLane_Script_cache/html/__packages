@@ -20,3 +20,5 @@ ShortRead
 EDASeq
 broom
 rmarkdown
+matrixStats
+DelayedArray

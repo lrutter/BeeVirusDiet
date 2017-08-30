@@ -59,6 +59,8 @@ I can create boxplot and RLE boxplot.
 ggparcoord(data.frame(y[[1]]), columns=1:48, alphaLines=0, boxplot=TRUE, scale="globalminmax") + coord_flip()
 
 ggparcoord(data.frame(log(y[[1]]/colMeans(y[[1]]))), columns=1:48, alphaLines=0, boxplot=TRUE, scale="globalminmax") + coord_flip()
+
+ggparcoord(data.frame(log(y[[1]]+1)), columns=1:48, alphaLines=0, boxplot=TRUE, scale="globalminmax") + coord_flip()
 ```
 
 I can create MDS plots of interest.

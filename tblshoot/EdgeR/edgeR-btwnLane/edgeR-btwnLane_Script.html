@@ -86,6 +86,8 @@ y &lt;- y[keep, , keep.lib.sizes=FALSE]</code></pre>
 <p><img src="edgeR-btwnLane_Script_files/figure-html/unnamed-chunk-4-1.png" width="960" /></p>
 <pre class="r"><code>ggparcoord(data.frame(log(y[[1]]/colMeans(y[[1]]))), columns=1:48, alphaLines=0, boxplot=TRUE, scale=&quot;globalminmax&quot;) + coord_flip()</code></pre>
 <p><img src="edgeR-btwnLane_Script_files/figure-html/unnamed-chunk-4-2.png" width="960" /></p>
+<pre class="r"><code>ggparcoord(data.frame(log(y[[1]]+1)), columns=1:48, alphaLines=0, boxplot=TRUE, scale=&quot;globalminmax&quot;) + coord_flip()</code></pre>
+<p><img src="edgeR-btwnLane_Script_files/figure-html/unnamed-chunk-4-3.png" width="960" /></p>
 <p>I can create MDS plots of interest.</p>
 <pre class="r"><code>allGroups &lt;- c(rep(&quot;NC&quot;,6), rep(&quot;NP&quot;,6), rep(&quot;NR&quot;,6), rep(&quot;NS&quot;,6), rep(&quot;VC&quot;,6), rep(&quot;VP&quot;,6), rep(&quot;VR&quot;,6), rep(&quot;VS&quot;,6))
 y$samples$group &lt;- allGroups
