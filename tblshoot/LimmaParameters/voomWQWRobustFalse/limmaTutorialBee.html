@@ -1,0 +1,262 @@
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc" />
+
+    <meta name="author" content="Lindsay Rutter" />
+  
+  
+  <title>Extraneous variables</title>
+
+    <script src="limmaTutorialBee_files/jquery-1.11.3/jquery.min.js"></script>
+  <link href="limmaTutorialBee_files/bootstrap-3.3.2/css/bootstrap.min.css" rel="stylesheet" />
+  <script src="limmaTutorialBee_files/bootstrap-3.3.2/js/bootstrap.min.js"></script>
+  <script src="limmaTutorialBee_files/bootstrap-3.3.2/shim/html5shiv.min.js"></script>
+  <script src="limmaTutorialBee_files/bootstrap-3.3.2/shim/respond.min.js"></script>
+  <link href="limmaTutorialBee_files/highlight-8.4/tomorrow.css" rel="stylesheet" />
+  <script src="limmaTutorialBee_files/highlight-8.4/highlight.pack.js"></script>
+  <link href="limmaTutorialBee_files/fontawesome-4.3.0/css/font-awesome.min.css" rel="stylesheet" />
+  <script src="limmaTutorialBee_files/stickykit-1.1.1/sticky-kit.min.js"></script>
+  <script src="limmaTutorialBee_files/jqueryeasing-1.3/jquery.easing.min.js"></script>
+  <link href="limmaTutorialBee_files/recliner-0.2.2/recliner.css" rel="stylesheet" />
+  <script src="limmaTutorialBee_files/recliner-0.2.2/recliner.min.js"></script>
+  <script src="limmaTutorialBee_files/recliner-0.2.2/onload.js"></script>
+  <link href="limmaTutorialBee_files/packagedocs-0.0.1/pd.css" rel="stylesheet" />
+  <script src="limmaTutorialBee_files/packagedocs-0.0.1/pd.js"></script>
+  <script src="limmaTutorialBee_files/packagedocs-0.0.1/pd-sticky-toc.js"></script>
+  
+  
+  
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+</head>
+
+<body>
+
+  
+  <header class="navbar navbar-white navbar-fixed-top" role="banner" id="header">
+    <div class="container">
+      <div class="navbar-header">
+        <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".navbar-collapse">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+                <a href="index.html" class="navbar-brand page-scroll">
+        Extraneous variables
+        </a>
+      </div>
+          </div>
+  </header>
+
+  <!-- Begin Body -->
+  <div class="container">
+    <div class="row">
+            <div class="col-md-12">
+      
+<div id="content-top"></div>
+<p><meta http-equiv="content-type" content="text/html;charset=utf-8" /></p>
+<p>This script tries to take into account possible extraneous variables, following advice given on <a href="https://support.bioconductor.org/p/97987/" class="uri">https://support.bioconductor.org/p/97987/</a>. Particularly, the advice: “You can provide some protection by setting robust=TRUE in eBayes to avoid shrinkage of large variances. You can also replace voom with voomWithQualityWeights to downweight low-quality samples.”</p>
+<p>Here, I use voomWithQualityWeights and set robust=FALSE in eBays.</p>
+<pre class="r"><code>library(limma)
+library(Glimma)
+library(GGally)
+library(ggplot2)
+library(edgeR)
+library(dplyr)</code></pre>
+<pre><code>
+Attaching package: &#39;dplyr&#39;</code></pre>
+<pre><code>The following object is masked from &#39;package:GGally&#39;:
+
+    nasa</code></pre>
+<pre><code>The following objects are masked from &#39;package:stats&#39;:
+
+    filter, lag</code></pre>
+<pre><code>The following objects are masked from &#39;package:base&#39;:
+
+    intersect, setdiff, setequal, union</code></pre>
+<pre class="r"><code>thisPath &lt;- &quot;/Users/lindz/bigPint&quot;
+beeCounts &lt;- read.delim(file=paste0(thisPath, &quot;/AllLaneCount.txt&quot;), row.names=1, stringsAsFactors = FALSE)
+colnames(beeCounts) &lt;- c(&quot;NC.1&quot;, &quot;NC.2&quot;, &quot;NR.1&quot;, &quot;VR.1&quot;, &quot;NS.1&quot;, &quot;VP.1&quot;, &quot;NS.2&quot;, &quot;VR.2&quot;, &quot;NP.1&quot;, &quot;VP.2&quot;, &quot;VC.1&quot;, &quot;NP.2&quot;, &quot;VP.3&quot;, &quot;NP.3&quot;, &quot;VS.1&quot;, &quot;VS.2&quot;, &quot;VC.2&quot;, &quot;NC.3&quot;, &quot;VP.4&quot;, &quot;NC.4&quot;, &quot;NR.2&quot;, &quot;VC.3&quot;, &quot;VC.4&quot;, &quot;NP.4&quot;, &quot;VR.3&quot;, &quot;NC.5&quot;, &quot;VS.3&quot;, &quot;NP.5&quot;, &quot;VC.5&quot;, &quot;VS.4&quot;, &quot;NS.3&quot;, &quot;VS.5&quot;, &quot;VP.5&quot;, &quot;NR.3&quot;, &quot;NR.4&quot;, &quot;VC.6&quot;, &quot;NS.4&quot;, &quot;NC.6&quot;, &quot;NP.6&quot;, &quot;VR.4&quot;, &quot;NR.5&quot;, &quot;NR.6&quot;, &quot;NS.5&quot;, &quot;VP.6&quot;, &quot;NS.6&quot;, &quot;VR.5&quot;, &quot;VR.6&quot;, &quot;VS.6&quot;)
+beeCounts &lt;- beeCounts[ , order(names(beeCounts))]
+x &lt;- DGEList(counts=beeCounts)
+
+#samplenames &lt;- substring(colnames(x), 12, nchar(colnames(x)))
+#colnames(x) &lt;- samplenames
+group &lt;- as.factor(colnames(x))
+group &lt;- factor(c(rep(&quot;NC&quot;,6), rep(&quot;NP&quot;,6), rep(&quot;NR&quot;,6), rep(&quot;NS&quot;,6), rep(&quot;VC&quot;,6), rep(&quot;VP&quot;,6), rep(&quot;VR&quot;,6), rep(&quot;VS&quot;,6)))
+x$samples$group &lt;- group
+lane &lt;- as.factor(c(&quot;L12&quot;,&quot;L12&quot;,&quot;L12&quot;,&quot;L12&quot;,&quot;L34&quot;,&quot;L34&quot;,&quot;L12&quot;,&quot;L12&quot;,&quot;L12&quot;,&quot;L12&quot;,&quot;L34&quot;,&quot;L34&quot;,&quot;L12&quot;,&quot;L12&quot;,&quot;L34&quot;,&quot;L34&quot;,&quot;L34&quot;,&quot;L34&quot;,&quot;L12&quot;,&quot;L12&quot;,&quot;L34&quot;,&quot;L34&quot;,&quot;L34&quot;,&quot;L34&quot;,&quot;L12&quot;,&quot;L12&quot;,&quot;L12&quot;,&quot;L12&quot;,&quot;L34&quot;,&quot;L34&quot;,&quot;L12&quot;,&quot;L12&quot;,&quot;L12&quot;,&quot;L12&quot;,&quot;L34&quot;,&quot;L34&quot;,&quot;L12&quot;,&quot;L12&quot;,&quot;L34&quot;,&quot;L34&quot;,&quot;L34&quot;,&quot;L34&quot;,&quot;L12&quot;,&quot;L12&quot;,&quot;L34&quot;,&quot;L34&quot;,&quot;L34&quot;,&quot;L34&quot;))
+x$samples$lane &lt;- lane</code></pre>
+<p>Transform and remove low counts.</p>
+<pre class="r"><code>cpm &lt;- cpm(x)
+keep.exprs &lt;- rowSums(cpm&gt;1)&gt;=8 # tried filtering up to 24 and not much difference
+x &lt;- x[keep.exprs,, keep.lib.sizes=FALSE] # 15,314 to 10,626
+dim(x)</code></pre>
+<pre><code>[1] 10626    48</code></pre>
+<pre class="r"><code>x &lt;- calcNormFactors(x, method = &quot;TMM&quot;)</code></pre>
+<p>Make boxplots</p>
+<pre class="r"><code>ggparcoord(data.frame(x[[1]]), columns=1:48, alphaLines=0, boxplot=TRUE, scale=&quot;globalminmax&quot;) + coord_flip()</code></pre>
+<p><img src="limmaTutorialBee_files/figure-html/unnamed-chunk-3-1.png" width="960" /></p>
+<pre class="r"><code>ggparcoord(data.frame(log(x[[1]]/colMeans(x[[1]]))), columns=1:48, alphaLines=0, boxplot=TRUE, scale=&quot;globalminmax&quot;) + coord_flip()</code></pre>
+<pre><code>Warning: Removed 2179 rows containing non-finite values (stat_boxplot).</code></pre>
+<p><img src="limmaTutorialBee_files/figure-html/unnamed-chunk-3-2.png" width="960" /></p>
+<p>Create MDS plots</p>
+<pre class="r"><code>library(RColorBrewer)
+lcpm &lt;- cpm(x, log=TRUE)
+par(mfrow=c(1,2))
+col.group &lt;- group
+levels(col.group) &lt;-  brewer.pal(nlevels(col.group), &quot;Set1&quot;)
+col.group &lt;- as.character(col.group)
+col.lane &lt;- lane
+levels(col.lane) &lt;-  brewer.pal(nlevels(col.lane), &quot;Set2&quot;)</code></pre>
+<pre><code>Warning in brewer.pal(nlevels(col.lane), &quot;Set2&quot;): minimal value for n is 3, returning requested palette with 3 different levels</code></pre>
+<pre class="r"><code>col.lane &lt;- as.character(col.lane)</code></pre>
+<pre class="r"><code>plotMDS(lcpm, labels=colnames(lcpm), col=col.group)</code></pre>
+<p><img src="limmaTutorialBee_files/figure-html/unnamed-chunk-5-1.png" width="960" /></p>
+<pre class="r"><code>plotMDS(lcpm, labels=colnames(lcpm), col=col.lane, dim=c(3,4))</code></pre>
+<p><img src="limmaTutorialBee_files/figure-html/unnamed-chunk-6-1.png" width="960" /></p>
+<pre class="r"><code>glMDSPlot(lcpm, labels=paste(group, lane, colnames(lcpm), sep=&quot;_&quot;), groups=x$samples[,c(1,4)], launch=FALSE)</code></pre>
+<p>Create design matrix. There are many ways to setup a design matrix. Here, we removed the intercept from group (the first factor), but kept the intercept from lane. This allows us to do contrasts with group more easily.</p>
+<pre class="r"><code>design &lt;- model.matrix(~0+group+lane)
+colnames(design) &lt;- gsub(&quot;group&quot;, &quot;&quot;, colnames(design))
+
+contr.matrix &lt;- makeContrasts(
+   NCvsNP = NC-NP,
+   NCvsNR = NC-NR,
+   NCvsNS = NC-NS,
+   NCvsVC = NC-VC,
+   NCvsVP = NC-VP,
+   NCvsVR = NC-VR,
+   NCvsVS = NC-VS,
+   NPvsNR = NP-NR,
+   NPvsNS = NP-NS,
+   NPvsVC = NP-VC,
+   NPvsVP = NP-VP,
+   NPvsVR = NP-VR,
+   NPvsVS = NP-VS,
+   NRvsNS = NR-NS,
+   NRvsVC = NR-VC,
+   NRvsVP = NR-VP,
+   NRvsVR = NR-VR,
+   NRvsVS = NR-VS,
+   NSvsVC = NS-VC,
+   NSvsVP = NS-VP,
+   NSvsVR = NS-VR,
+   NSvsVS = NS-VS,
+   VCvsVP = VC-VP,
+   VCvsVR = VC-VR,
+   VCvsVS = VC-VS,
+   VPvsVR = VP-VR,
+   VPvsVS = VP-VS,
+   VRvsVS = VR-VS,
+   levels = colnames(design))</code></pre>
+<pre class="r"><code>par(mfrow=c(1,2))
+v &lt;- voomWithQualityWeights(x, design, normalization=&quot;none&quot;, plot=TRUE)</code></pre>
+<p><img src="limmaTutorialBee_files/figure-html/unnamed-chunk-9-1.png" width="960" /></p>
+<pre class="r"><code>vfit &lt;- lmFit(v, design)
+vfit &lt;- contrasts.fit(vfit, contrasts=contr.matrix)
+efit &lt;- eBayes(vfit)
+plotSA(efit, main=&quot;Final model: Mean−variance trend&quot;)</code></pre>
+<p><img src="limmaTutorialBee_files/figure-html/unnamed-chunk-9-2.png" width="960" /></p>
+<p>Some samples that appear as outliers in MDS plot have low weights (VP.2, NP.2, NS.1, NR.2, VS.1). Others do not have low weights (NP.1)</p>
+<pre class="r"><code>weightInfo &lt;- data.frame(sample = as.character(colnames(x)), weight = v[[5]])
+arrange(weightInfo, weight)</code></pre>
+<pre><code>   sample    weight
+1    VP.2 0.2913534
+2    NP.2 0.3784200
+3    NC.3 0.4231230
+4    NR.3 0.4353983
+5    NC.6 0.5067414
+6    VC.4 0.5194251
+7    VP.1 0.5413578
+8    NS.1 0.5617448
+9    VP.6 0.5764398
+10   NR.2 0.5955121
+11   VR.1 0.6493877
+12   VS.1 0.6631390
+13   VP.3 0.6649097
+14   VR.5 0.6976570
+15   VR.6 0.8146347
+16   NP.6 0.8439093
+17   NP.4 0.8744485
+18   VC.1 0.9134444
+19   NC.5 0.9479052
+20   VC.2 0.9851512
+21   NC.4 0.9955686
+22   VS.6 0.9991528
+23   NS.2 1.0023421
+24   NS.6 1.0125441
+25   VP.5 1.0278907
+26   NP.5 1.0391634
+27   NP.1 1.0750810
+28   NS.3 1.1425594
+29   NS.5 1.1509612
+30   NC.2 1.2030463
+31   VC.5 1.2149171
+32   VS.3 1.2495256
+33   NR.4 1.3167668
+34   NC.1 1.3530760
+35   VR.2 1.3584851
+36   NP.3 1.4591314
+37   NS.4 1.5026204
+38   NR.1 1.5598674
+39   VP.4 1.5749482
+40   NR.6 1.6136126
+41   VC.3 1.6186150
+42   VR.4 1.6536853
+43   NR.5 1.8507644
+44   VR.3 1.9321404
+45   VS.2 1.9738054
+46   VS.4 2.1881235
+47   VS.5 2.6599132
+48   VC.6 2.7157369</code></pre>
+<pre class="r"><code>summary(decideTests(efit))</code></pre>
+<pre><code>   NCvsNP NCvsNR NCvsNS NCvsVC NCvsVP NCvsVR NCvsVS NPvsNR NPvsNS NPvsVC
+-1      1    524      0      0      1    280      0      0   1040     90
+0   10624   9470  10625  10626  10625  10038  10626  10626   8140  10391
+1       1    632      1      0      0    308      0      0   1446    145
+   NPvsVP NPvsVR NPvsVS NRvsNS NRvsVC NRvsVP NRvsVR NRvsVS NSvsVC NSvsVP
+-1      0    118    792   1604    747     15    196   1289      0    278
+0   10626  10384   8570   7334   9239  10608  10356   7972  10626  10168
+1       0    124   1264   1688    640      3     74   1365      0    180
+   NSvsVR NSvsVS VCvsVP VCvsVR VCvsVS VPvsVR VPvsVS VRvsVS
+-1   1171      0      2    239      0      0      0    233
+0    8511  10626  10624  10129  10626  10626  10626  10096
+1     944      0      0    258      0      0      0    297</code></pre>
+<pre class="r"><code>pairNames &lt;- colnames(contr.matrix)
+topGenes &lt;- list()
+genePval &lt;- list()
+for (i in 1:length(pairNames)) {
+  temp &lt;- topTreat(efit, coef=i, n=Inf)
+  sigRows &lt;- which(temp$adj.P.Val&lt;0.05)
+  topGenes[[ pairNames[i] ]] &lt;- temp[sigRows,]
+  genePval[[ pairNames[i] ]] &lt;- temp
+}</code></pre>
+<p>Save the data</p>
+<pre class="r"><code>saveRDS(topGenes, file=&quot;topGenes_limma.Rds&quot;)
+saveRDS(genePval, file=&quot;genePval_limma.Rds&quot;)
+saveRDS(x, file=&quot;data_limma.Rds&quot;)</code></pre>
+
+
+      </div>
+    </div>
+  </div>
+
+  <div id="footer">
+    <div class="container">
+      <div class="col-md-6">
+              </div>
+      <div class="col-md-6">
+        <p class="pull-right">created with <a href="https://github.com/hafen/packagedocs">packagedocs</a>
+                  </p>
+      </div>
+    </div>
+  </div>
+
+  
+</body>
+</html>

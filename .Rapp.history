@@ -1,1 +1,2 @@
 load("/Users/lindz/BeeVirusDiet/mymodel.rds")
+load("/Users/lindz/BeeVirusDiet/beeVolcanoData.rds")
