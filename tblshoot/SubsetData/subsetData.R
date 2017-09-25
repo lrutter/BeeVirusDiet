@@ -50,7 +50,7 @@ for (i in 1:(length(treatments)-1)){
     allPairs = rbind(allPairs, data.frame(Treatment1 = factor(treatments[i]), Treatment2 = factor(treatments[j]), NumberDEG = lrtLength))
   }
 }
-
+allPairs <- allPairs[order(allPairs$NumberDEG),]
 
 
 
