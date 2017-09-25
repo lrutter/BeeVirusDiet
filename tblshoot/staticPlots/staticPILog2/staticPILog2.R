@@ -2,7 +2,7 @@ library(ggplot2)
 
 outDir = "/Users/lindz/BeeVirusDiet/staticPILog2"
 predLevel = 0.999999
-size = 0.1
+pointSize = 0.1
 
 my_fn <- function(data, mapping, ...){
   xChar = as.character(mapping$x)
@@ -16,7 +16,7 @@ my_fn <- function(data, mapping, ...){
   pred_interval <- predict(m, newdata=data.frame(x=newx), interval="prediction", level = predLevel)
   pred_interval <- as.data.frame(pred_interval)
   pred_interval[xChar] = newx
-  p <- ggplot(data = plotPoints, aes_string(x = xChar)) + geom_point(aes_string(y = yChar), size=size) + geom_ribbon(data= pred_interval, aes(ymin = lwr, ymax = upr), fill = "blue", alpha = 0.2) + coord_cartesian(xlim = c(minX, maxX), ylim = c(minX, maxX))
+  p <- ggplot(data = plotPoints, aes_string(x = xChar)) + geom_point(aes_string(y = yChar), size=pointSize) + geom_ribbon(data= pred_interval, aes(ymin = lwr, ymax = upr), fill = "blue", alpha = 0.2) + coord_cartesian(xlim = c(minX, maxX), ylim = c(minX, maxX))
   p
 }
 
