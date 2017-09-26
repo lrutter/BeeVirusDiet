@@ -45,4 +45,4 @@ setDT(bees_data, keep.rownames = TRUE)[]
 colnames(bees_data)[1] = "ID"
 bees_data = as.data.frame(bees_data)
 
-save(bees_data, file = "../../data/bees_data_12_48.rda")
+save(bees_data, file = "../../data/bees_data_48.rda")

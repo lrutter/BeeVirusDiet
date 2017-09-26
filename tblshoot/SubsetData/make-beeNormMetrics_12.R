@@ -26,7 +26,7 @@ findPairs <- function(data){
   setDT(lrt, keep.rownames = TRUE)[]
   colnames(lrt)[1] = "ID"
   lrt <- as.data.frame(lrt)
-  lrt
+  list(lrt=lrt, y=y)
 }
 
 beeCounts <-read.delim(file="../../data/AllLaneCount.txt",row.names=1,stringsAsFactors = FALSE)
@@ -42,9 +42,14 @@ for (i in 1:(length(treatments)-1)){
   for (j in (i+1):length(treatments)){
     keep = which(colNames %in% c(treatments[i], treatments[j]))
     beeCounts2 = beeCounts[, keep]
-    lrt <- findPairs(beeCounts2)
+    ret <- findPairs(beeCounts2)
+    lrt <- ret$lrt
+    data <- as.data.frame(ret$y[[1]])
+    setDT(data, keep.rownames = TRUE)[]
+    colnames(data)[1] = "ID"
+    data = as.data.frame(data)
     metrics12[[paste0(treatments[i], "_", treatments[j])]] <- lrt
-
+    save(data, file = paste0("../../data/bees_", treatments[i], "_", treatments[j], "_12.rda"))
   }
 }
 
