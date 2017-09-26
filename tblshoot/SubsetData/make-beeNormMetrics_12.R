@@ -49,7 +49,7 @@ for (i in 1:(length(treatments)-1)){
     colnames(data)[1] = "ID"
     data = as.data.frame(data)
     metrics12[[paste0(treatments[i], "_", treatments[j])]] <- lrt
-    save(data, file = paste0("../../data/bees_", treatments[i], "_", treatments[j], "_12.rda"))
+    save(metrics12, file = paste0("../../data/bees_", treatments[i], "_", treatments[j], "_12.rda"))
   }
 }
 
