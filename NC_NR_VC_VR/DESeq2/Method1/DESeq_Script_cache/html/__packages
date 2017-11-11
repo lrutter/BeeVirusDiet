@@ -5,9 +5,10 @@ IRanges
 GenomeInfoDb
 GenomicRanges
 Biobase
+matrixStats
+DelayedArray
 SummarizedExperiment
 DESeq2
 gplots
 RColorBrewer
-knitr
-rmarkdown
+data.table
