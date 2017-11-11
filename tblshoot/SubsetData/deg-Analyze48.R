@@ -5,7 +5,7 @@ library(dplyr)
 library(tidyr)
 library(ggplot2)
 load("../../data/bees_data_48.rda")
-load("../../data/bees_metrics_48.rda")
+load("../../data/bees_metrics.rda")
 data = bees_data
 metrics = bees_metrics
 rm(bees_data,bees_metrics)
