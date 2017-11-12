@@ -12,3 +12,4 @@ DESeq2
 gplots
 RColorBrewer
 data.table
+ggplot2

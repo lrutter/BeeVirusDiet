@@ -26,6 +26,7 @@ library(DESeq2)
 library(gplots)
 library(RColorBrewer)
 library(data.table)
+library(ggplot2)
 
 thisPath <- getwd()
 
@@ -92,5 +93,5 @@ heatmap.2(sampleDistMatrix, trace="none", col=colours)
 ```
 
 ```{r}
-print(plotPCA(rld, intgroup="treatment"))
+print(plotPCA(rld, intgroup="treatment") + geom_label(aes(label = name), label.size=0.001))
 ```

@@ -1,0 +1,79 @@
+---
+title: "Honey Bees - DESeq"
+author: Lindsay Rutter
+output:
+  packagedocs::package_docs:
+    toc: true
+    toc_collapse: true
+vignette: >
+  %\VignetteEngine{packagedocs::redirect}
+---
+
+<meta http-equiv="content-type" content="text/html;charset=utf-8" />
+
+```{r global_options, include=FALSE}
+# R output pre blocks are styled by default to indicate output
+knitr::opts_chunk$set(
+  comment = NA,
+  cache = TRUE,
+  fig.height = 8,
+  fig.width = 10
+)
+```
+
+```{r}
+library(DESeq2)
+library(RColorBrewer)
+library(gplots)
+library(ggplot2)
+thisPath <- getwd()
+
+data <- readRDS("../../data/data.Rds")
+data <- as.matrix(data)
+
+coldata = data.frame(row.names = colnames(data), virus = unlist(lapply(colnames(data), function (x) substring(unlist(strsplit(x, "[.]"))[1],1,1))), diet = unlist(lapply(colnames(data), function (x) substring(unlist(strsplit(x, "[.]"))[1],2,2))), treatment = unlist(lapply(colnames(data), function (x) unlist(strsplit(x, "[.]"))[1])))
+```
+
+We can examine pairwise combinations of all samples
+
+```{r}
+uTreat <- unique(unlist(lapply(colnames(data), function (x) unlist(strsplit(x, "[.]"))[1])))
+allPairs = data.frame(Treatment1 = factor(), Treatment2 = factor(), NumberDEG = numeric())
+dataMetrics <- list()
+
+for (i in 1:(length(uTreat)-1)){
+  for (j in (i+1):length(uTreat)){
+    sampleIndex <- which(sapply(colnames(data), function(x) unlist(strsplit(x,"[.]"))[1]) %in% c(uTreat[i], uTreat[j]))
+    subCountData <- data[, sampleIndex]
+    sampleIndex2 <- which(coldata$treatment %in% c(uTreat[i], uTreat[j]))
+    subColData <- coldata[sampleIndex2,]
+    dds = DESeqDataSetFromMatrix(countData = subCountData, colData = subColData, design = ~ treatment)
+    dds <- DESeq(dds)
+    res <- results(dds, contrast=c("treatment",uTreat[i],uTreat[j]))
+    hist(res$pvalue, breaks=20, col="grey", main=paste("pvalue for", uTreat[i], "and", uTreat[j]))
+    rld <- rlog(dds)
+    
+    rldDF <- as.data.frame(assay(rld))
+    saveRDS(rldDF, file=paste0("dataFolder/dataRLD_", uTreat[i], "_", uTreat[j], ".Rds"))
+    
+    degLength <- length(which((res@listData)$padj <0.05))
+    allPairs = rbind(allPairs, data.frame(Treatment1 = uTreat[i], Treatment2 = uTreat[j], NumberDEG = degLength))
+    
+    metrics = as.data.frame(res@listData)
+    metrics = cbind(ID = res@rownames, metrics)
+    metrics$ID = as.character(metrics$ID)
+    dataMetrics[[paste0(uTreat[i], "_", uTreat[j])]] <- metrics
+
+    sampleDists <- dist(t(assay(rld)))
+    sampleDistMatrix <- as.matrix(sampleDists)
+    rownames(sampleDistMatrix) <- paste(rld$treatment, rld$patient, sep="-")
+    colnames(sampleDistMatrix) <- NULL
+    colours = colorRampPalette(rev(brewer.pal(9, "Blues")))(255)
+    heatmap.2(sampleDistMatrix, trace="none", col=colours)
+    print(plotPCA(rld, intgroup="treatment") + geom_label(aes(label = name), label.size=0.001))
+  }
+}
+saveRDS(dataMetrics, file=paste0("dataFolder/dataMetrics.Rds"))
+allPairs <- allPairs[order(allPairs$NumberDEG),]
+allPairs
+```

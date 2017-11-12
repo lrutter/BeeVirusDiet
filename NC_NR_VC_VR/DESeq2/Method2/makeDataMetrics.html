@@ -59,90 +59,13 @@
       
 <div id="content-top"></div>
 <p><meta http-equiv="content-type" content="text/html;charset=utf-8" /></p>
-<pre class="r"><code>library(DESeq2)</code></pre>
-<pre><code>Loading required package: S4Vectors</code></pre>
-<pre><code>Loading required package: stats4</code></pre>
-<pre><code>Loading required package: BiocGenerics</code></pre>
-<pre><code>Loading required package: parallel</code></pre>
-<pre><code>
-Attaching package: &#39;BiocGenerics&#39;</code></pre>
-<pre><code>The following objects are masked from &#39;package:parallel&#39;:
+<pre class="r"><code>library(DESeq2)
+library(gplots)
+library(RColorBrewer)
+library(data.table)
+library(ggplot2)
 
-    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
-    clusterExport, clusterMap, parApply, parCapply, parLapply,
-    parLapplyLB, parRapply, parSapply, parSapplyLB</code></pre>
-<pre><code>The following objects are masked from &#39;package:stats&#39;:
-
-    IQR, mad, sd, var, xtabs</code></pre>
-<pre><code>The following objects are masked from &#39;package:base&#39;:
-
-    anyDuplicated, append, as.data.frame, cbind, colMeans,
-    colnames, colSums, do.call, duplicated, eval, evalq, Filter,
-    Find, get, grep, grepl, intersect, is.unsorted, lapply,
-    lengths, Map, mapply, match, mget, order, paste, pmax,
-    pmax.int, pmin, pmin.int, Position, rank, rbind, Reduce,
-    rowMeans, rownames, rowSums, sapply, setdiff, sort, table,
-    tapply, union, unique, unsplit, which, which.max, which.min</code></pre>
-<pre><code>
-Attaching package: &#39;S4Vectors&#39;</code></pre>
-<pre><code>The following object is masked from &#39;package:base&#39;:
-
-    expand.grid</code></pre>
-<pre><code>Loading required package: IRanges</code></pre>
-<pre><code>Loading required package: GenomicRanges</code></pre>
-<pre><code>Loading required package: GenomeInfoDb</code></pre>
-<pre><code>Loading required package: SummarizedExperiment</code></pre>
-<pre><code>Loading required package: Biobase</code></pre>
-<pre><code>Welcome to Bioconductor
-
-    Vignettes contain introductory material; view with
-    &#39;browseVignettes()&#39;. To cite Bioconductor, see
-    &#39;citation(&quot;Biobase&quot;)&#39;, and for packages &#39;citation(&quot;pkgname&quot;)&#39;.</code></pre>
-<pre><code>Loading required package: DelayedArray</code></pre>
-<pre><code>Loading required package: matrixStats</code></pre>
-<pre><code>
-Attaching package: &#39;matrixStats&#39;</code></pre>
-<pre><code>The following objects are masked from &#39;package:Biobase&#39;:
-
-    anyMissing, rowMedians</code></pre>
-<pre><code>
-Attaching package: &#39;DelayedArray&#39;</code></pre>
-<pre><code>The following objects are masked from &#39;package:matrixStats&#39;:
-
-    colMaxs, colMins, colRanges, rowMaxs, rowMins, rowRanges</code></pre>
-<pre><code>The following object is masked from &#39;package:base&#39;:
-
-    apply</code></pre>
-<pre class="r"><code>library(gplots)</code></pre>
-<pre><code>
-Attaching package: &#39;gplots&#39;</code></pre>
-<pre><code>The following object is masked from &#39;package:IRanges&#39;:
-
-    space</code></pre>
-<pre><code>The following object is masked from &#39;package:S4Vectors&#39;:
-
-    space</code></pre>
-<pre><code>The following object is masked from &#39;package:stats&#39;:
-
-    lowess</code></pre>
-<pre class="r"><code>library(RColorBrewer)
-library(data.table)</code></pre>
-<pre><code>Warning: package &#39;data.table&#39; was built under R version 3.4.2</code></pre>
-<pre><code>
-Attaching package: &#39;data.table&#39;</code></pre>
-<pre><code>The following object is masked from &#39;package:SummarizedExperiment&#39;:
-
-    shift</code></pre>
-<pre><code>The following object is masked from &#39;package:GenomicRanges&#39;:
-
-    shift</code></pre>
-<pre><code>The following object is masked from &#39;package:IRanges&#39;:
-
-    shift</code></pre>
-<pre><code>The following objects are masked from &#39;package:S4Vectors&#39;:
-
-    first, second</code></pre>
-<pre class="r"><code>thisPath &lt;- getwd()
+thisPath &lt;- getwd()
 
 data &lt;- readRDS(&quot;../../data/data.Rds&quot;)
 data &lt;- as.matrix(data)
@@ -198,7 +121,7 @@ colnames(sampleDistMatrix) &lt;- NULL
 colours = colorRampPalette(rev(brewer.pal(9, &quot;Blues&quot;)))(255)
 heatmap.2(sampleDistMatrix, trace=&quot;none&quot;, col=colours)</code></pre>
 <p><img src="makeDataMetrics_files/figure-html/unnamed-chunk-6-1.png" width="960" /></p>
-<pre class="r"><code>print(plotPCA(rld, intgroup=&quot;treatment&quot;))</code></pre>
+<pre class="r"><code>print(plotPCA(rld, intgroup=&quot;treatment&quot;) + geom_label(aes(label = name), label.size=0.001))</code></pre>
 <p><img src="makeDataMetrics_files/figure-html/unnamed-chunk-7-1.png" width="960" /></p>
 
 

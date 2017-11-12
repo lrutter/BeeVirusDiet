@@ -1,4 +1,5 @@
 library(bigPint)
+library(data.table)
 
 outDir = getwd()
 dataMetrics <- readRDS("../dataMetrics.Rds")
