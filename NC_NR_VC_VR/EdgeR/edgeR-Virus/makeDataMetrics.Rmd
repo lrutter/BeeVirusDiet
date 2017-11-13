@@ -1,0 +1,103 @@
+---
+title: "Honey Bees - edgeR"
+author: Lindsay Rutter
+output:
+  packagedocs::package_docs:
+    toc: true
+    toc_collapse: true
+vignette: >
+  %\VignetteEngine{packagedocs::redirect}
+---
+
+<meta http-equiv="content-type" content="text/html;charset=utf-8" />
+
+```{r global_options, include=FALSE}
+# R output pre blocks are styled by default to indicate output
+knitr::opts_chunk$set(
+  comment = NA,
+  cache = TRUE,
+  fig.height = 8,
+  fig.width = 10
+)
+```
+
+```{r}
+library(edgeR)
+library(ggplot2)
+library(GGally)
+library(EDASeq)
+library(utils)
+
+thisPath <- getwd()
+
+beeCounts <- readRDS("../../data/data.Rds")
+beeCounts <- as.matrix(beeCounts)
+colnames(beeCounts) <- c(paste0(rep("N",12),".",1:12),paste0(rep("V",12),".",1:12))
+
+y <- DGEList(counts=beeCounts)
+```
+
+edgeR vignette states that a gene is required to have a count of 5-10 in a library to be considered expressed in that library. Here minLib is equal to `r min(y$samples$lib.size)`. A CPM of 4 corresponds to a count of ~1 in the minimum number of samples in a group (6). So, I keep only rows that have that. This reduces the number of genes from 15,314 to 8,672.
+
+```{r}
+minLib <- min(y$samples$lib.size)
+keep <- rowSums(cpm(y)>4) >= 6
+# Number of genes 15,314--> 8,672
+y <- y[keep, , keep.lib.sizes=FALSE]
+```
+
+Next, I used edgeR normalization.
+```{r}
+y <- calcNormFactors(y)
+```
+
+Copying Section (3.3.1 in edgeR vignette)
+
+```{r}
+Group = factor(c(rep("N",12), rep("V",12)))
+design <- model.matrix(~0+Group, data=y$samples)
+colnames(design) <- levels(Group)
+y <- estimateDisp(y, design)
+plotBCV(y)
+```
+
+```{r}
+fit <- glmFit(y, design)
+saveRDS(y[[1]], file="data.Rds")
+```
+
+Below we save the DEGs from all pairwise combinations of treatment groups.
+
+```{r}
+allPairs = data.frame(Treatment1 = factor(), Treatment2 = factor(), NumberDEG = numeric(), FirstLarger = numeric(), SecondLarger = numeric())
+
+dataMetrics <- list()
+
+for (i in 1:(ncol(fit)-1)){
+  for (j in (i+1):ncol(fit)){
+    contrast=rep(0,ncol(fit))
+    contrast[i]=1
+    contrast[j]=-1
+    lrt <- glmLRT(fit, contrast=contrast)
+    lrt <- topTags(lrt, n = nrow(y[[1]]))[[1]]
+    lrt5 <- lrt[which(lrt$FDR<0.05),]
+    
+    df <- y[[1]][rownames(y[[1]]) %in% rownames(lrt5), c(which(sapply(colnames(y[[1]]), function(x) strsplit(x, "[.]")[[1]][1]) %in% (colnames(fit)[i])), which(sapply(colnames(y[[1]]), function(x) strsplit(x, "[.]")[[1]][1]) %in% (colnames(fit)[j])))]
+    firstLarger <- length(which(apply(df, 1, function(x) mean(x[1:6]) > mean(x[7:12]))))
+    secondLarger <- length(which(apply(df, 1, function(x) mean(x[1:6]) < mean(x[7:12]))))
+    
+    lrtLength <- nrow(lrt5)
+    allPairs = rbind(allPairs, data.frame(Treatment1 = factor(colnames(fit)[i]), Treatment2 = factor(colnames(fit)[j]), NumberDEG = lrtLength, FirstLarger = firstLarger, SecondLarger = secondLarger))
+    
+    metrics = cbind(ID = rownames(lrt), lrt)
+    metrics$ID = as.character(metrics$ID)
+    dataMetrics[[paste0(colnames(fit)[i], "_", colnames(fit)[j])]] <- metrics
+  }
+}
+allPairs <- allPairs[order(allPairs$NumberDEG),]
+saveRDS(dataMetrics, file="dataMetrics.Rds")
+```
+
+```{r}
+allPairs
+```
